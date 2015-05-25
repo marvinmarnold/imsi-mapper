@@ -1,0 +1,27 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Listing Imsi Data</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Aimsicd thread level</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @imsi_data.each do |imsi_datum| %>
+      <tr>
+        <td><%= imsi_datum.aimsicd_thread_level %></td>
+        <td><%= link_to 'Show', imsi_datum %></td>
+        <td><%= link_to 'Edit', edit_imsi_datum_path(imsi_datum) %></td>
+        <td><%= link_to 'Destroy', imsi_datum, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Imsi datum', new_imsi_datum_path %>

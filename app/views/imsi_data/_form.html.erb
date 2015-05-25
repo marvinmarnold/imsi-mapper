@@ -1,0 +1,21 @@
+<%= form_for(@imsi_datum) do |f| %>
+  <% if @imsi_datum.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@imsi_datum.errors.count, "error") %> prohibited this imsi_datum from being saved:</h2>
+
+      <ul>
+      <% @imsi_datum.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :aimsicd_thread_level %><br>
+    <%= f.number_field :aimsicd_thread_level %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
