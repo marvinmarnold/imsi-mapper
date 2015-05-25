@@ -5,7 +5,9 @@
 <table>
   <thead>
     <tr>
-      <th>Aimsicd thread level</th>
+      <th>Aimsicd threat level</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
       <th colspan="3"></th>
     </tr>
   </thead>
@@ -13,7 +15,9 @@
   <tbody>
     <% @imsi_data.each do |imsi_datum| %>
       <tr>
-        <td><%= imsi_datum.aimsicd_thread_level %></td>
+        <td><%= imsi_datum.aimsicd_threat_level %></td>
+        <td><%= imsi_datum.latitude_degrees %></td>
+        <td><%= imsi_datum.longitude_degrees %></td>
         <td><%= link_to 'Show', imsi_datum %></td>
         <td><%= link_to 'Edit', edit_imsi_datum_path(imsi_datum) %></td>
         <td><%= link_to 'Destroy', imsi_datum, method: :delete, data: { confirm: 'Are you sure?' } %></td>

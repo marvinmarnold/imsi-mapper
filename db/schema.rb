@@ -11,15 +11,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150525004338) do
+ActiveRecord::Schema.define(version: 20150525192046) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "imsi_data", force: :cascade do |t|
-    t.integer  "aimsicd_thread_level"
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
+    t.integer  "aimsicd_threat_level"
+    t.datetime "created_at",                                                   null: false
+    t.datetime "updated_at",                                                   null: false
+    t.decimal  "latitude_degrees",     precision: 15, scale: 10, default: 0.0
+    t.decimal  "longitude_degrees",    precision: 15, scale: 10, default: 0.0
   end
 
 end

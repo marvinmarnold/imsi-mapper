@@ -69,6 +69,6 @@ class ImsiDataController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def imsi_datum_params
-      params.require(:imsi_datum).permit(:aimsicd_thread_level)
+      params.require(:imsi_datum).permit(:aimsicd_threat_level)
     end
 end

@@ -66,7 +66,11 @@ module Api
 
 	    # Never trust parameters from the scary internet, only allow the white list through.
 	    def imsi_datum_params
-	      params.require(:imsi_datum).permit(:aimsicd_thread_level)
+	      params.require(:imsi_datum).permit(
+	      	:aimsicd_threat_level,
+	      	:latitude_degrees,
+	      	:longitude_degrees
+	   		)
 	    end
 	end
 	end
