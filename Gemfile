@@ -44,3 +44,6 @@ group :development, :test do
 end
 
 gem 'rails_12factor', group: :production
+gem 'therubyracer'
+gem 'less-rails'
+gem 'twitter-bootstrap-rails'

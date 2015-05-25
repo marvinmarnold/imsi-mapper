@@ -1,0 +1,20 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Num hotspots</th>
+      <th>Lat</th>
+      <th>Long</th>
+      <th>Uploaded at</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @wifi_data.each do |wifi_datum| %>
+      <tr>
+        <td><%= wifi_datum.num_wifi_hotspots %></td>
+        <td><%= wifi_datum.latitude_degrees %></td>
+        <td><%= wifi_datum.longitude_degrees %></td>
+        <td><%=l wifi_datum.created_at %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

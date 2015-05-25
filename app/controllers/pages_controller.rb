@@ -1,5 +1,6 @@
 class PagesController < ApplicationController
   def index
-  	@num_data = ImsiDatum.all.size
+  	@imsi_data = ImsiDatum.all
+  	@wifi_data = WifiDatum.all
   end
 end
