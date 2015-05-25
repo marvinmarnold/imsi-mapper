@@ -1,0 +1,29 @@
+<%= form_for(@wifi_datum) do |f| %>
+  <% if @wifi_datum.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@wifi_datum.errors.count, "error") %> prohibited this wifi_datum from being saved:</h2>
+
+      <ul>
+      <% @wifi_datum.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :num_wifi_hotspots %><br>
+    <%= f.number_field :num_wifi_hotspots %>
+  </div>
+  <div class="field">
+    <%= f.label :latitude_degrees %><br>
+    <%= f.text_field :latitude_degrees %>
+  </div>
+  <div class="field">
+    <%= f.label :longitude_degrees %><br>
+    <%= f.text_field :longitude_degrees %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

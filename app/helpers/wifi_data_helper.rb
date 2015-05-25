@@ -1,0 +1,2 @@
+module WifiDataHelper
+end

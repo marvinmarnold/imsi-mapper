@@ -1,0 +1,19 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Num wifi hotspots:</strong>
+  <%= @wifi_datum.num_wifi_hotspots %>
+</p>
+
+<p>
+  <strong>Latitude degrees:</strong>
+  <%= @wifi_datum.latitude_degrees %>
+</p>
+
+<p>
+  <strong>Longitude degrees:</strong>
+  <%= @wifi_datum.longitude_degrees %>
+</p>
+
+<%= link_to 'Edit', edit_wifi_datum_path(@wifi_datum) %> |
+<%= link_to 'Back', wifi_data_path %>

@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  num_wifi_hotspots: 1
+  latitude_degrees: 9.99
+  longitude_degrees: 9.99
+
+two:
+  num_wifi_hotspots: 1
+  latitude_degrees: 9.99
+  longitude_degrees: 9.99
