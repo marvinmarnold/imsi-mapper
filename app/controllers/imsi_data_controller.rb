@@ -5,7 +5,6 @@ class ImsiDataController < ApplicationController
   # GET /imsi_data.json
   def index
     @imsi_data = ImsiDatum.all
-    ImsiDatum.create(aimsicd_thread_level: 3)
   end
 
   # GET /imsi_data/1

@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
   get 'pages/index'
 
+  namespace :api do
+    namespace :v1 do
+      resources :imsi_data
+    end
+  end
+
   resources :imsi_data
   root to: "pages#index"
   # The priority is based upon order of creation: first created -> highest priority.
