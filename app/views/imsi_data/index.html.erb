@@ -3,3 +3,6 @@
   <h1><%=t '.title', :default => model_class.model_name.human.pluralize.titleize %></h1>
 </div>
 <%= render 'imsi_data/index' %>
+<%= link_to t('.new', :default => t("helpers.links.new")),
+            new_imsi_datum_path,
+            :class => 'btn btn-primary' %>
