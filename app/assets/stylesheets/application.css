@@ -14,3 +14,6 @@
  *= require_self
  *= require bootstrap_and_overrides
  */
+ #map {
+ 	height:300px;
+ }
