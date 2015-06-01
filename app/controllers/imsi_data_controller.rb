@@ -5,6 +5,28 @@ class ImsiDataController < ApplicationController
   # GET /imsi_data.json
   def index
     @imsi_data = ImsiDatum.all
+    @geojson = Array.new
+
+    @imsi_data.each do |imsi_datum|
+      @geojson << {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [imsi_datum.longitude_degrees, imsi_datum.latitude_degrees]
+        },
+        properties: {
+          name: imsi_datum.aimsicd_threat_level,
+          :'marker-color' => '#00607d',
+          :'marker-symbol' => 'circle',
+          :'marker-size' => 'medium'
+        }
+      }
+    end
+
+    respond_to do |format|
+      format.html
+      format.json { render json: @geojson }
+    end
   end
 
   # GET /imsi_data/1
@@ -69,6 +91,10 @@ class ImsiDataController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def imsi_datum_params
-      params.require(:imsi_datum).permit(:aimsicd_threat_level)
+      params.require(:imsi_datum).permit(
+        :aimsicd_threat_level,
+        :latitude_degrees,
+        :longitude_degrees
+      )
     end
 end
