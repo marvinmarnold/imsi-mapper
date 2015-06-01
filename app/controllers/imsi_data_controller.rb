@@ -16,7 +16,7 @@ class ImsiDataController < ApplicationController
         },
         properties: {
           name: imsi_datum.aimsicd_threat_level,
-          :'marker-color' => '#00607d',
+          :'marker-color' => marker_color(imsi_datum.aimsicd_threat_level),
           :'marker-symbol' => 'circle',
           :'marker-size' => 'medium'
         }
@@ -27,6 +27,16 @@ class ImsiDataController < ApplicationController
       format.html
       format.json { render json: @geojson }
     end
+  end
+
+  def marker_color(threat_level)
+    color = {
+      "5" => '#00607d',
+      "10" => '#D1CD00',
+      "15" => '#F11B1B'
+    }[threat_level.to_s]
+
+    (color) ? color : '#FFFFFF'
   end
 
   # GET /imsi_data/1
