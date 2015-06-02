@@ -5,6 +5,32 @@ class WifiDataController < ApplicationController
   # GET /wifi_data.json
   def index
     @wifi_data = WifiDatum.all
+    @geojson = Array.new
+
+    @wifi_data.each do |wifi_datum|
+      @geojson << {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [wifi_datum.longitude_degrees, wifi_datum.latitude_degrees]
+        },
+        properties: {
+          name: wifi_datum.num_wifi_hotspots,
+          :'marker-color' => marker_color(wifi_datum.num_wifi_hotspots),
+          :'marker-symbol' => 'monument',
+          :'marker-size' => 'medium'
+        }
+      }
+    end
+
+    respond_to do |format|
+      format.html
+      format.json { render json: @geojson }
+    end
+  end
+
+  def marker_color(num_wifi_hotspots)
+    '#FFFFFF'
   end
 
   # GET /wifi_data/1
