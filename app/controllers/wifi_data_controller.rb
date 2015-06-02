@@ -30,7 +30,7 @@ class WifiDataController < ApplicationController
   end
 
   def marker_color(num_wifi_hotspots)
-    '#FFFFFF'
+    "#" + (num_wifi_hotspots * 1677721).to_s(16)
   end
 
   # GET /wifi_data/1
