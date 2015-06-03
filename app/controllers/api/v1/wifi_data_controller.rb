@@ -41,7 +41,11 @@ module Api
 
         # Never trust parameters from the scary internet, only allow the white list through.
         def wifi_datum_params
-          params.require(:wifi_datum).permit(:num_wifi_hotspots, :latitude_degrees, :longitude_degrees)
+          params.require(:wifi_datum).permit(
+            :num_wifi_hotspots,
+            :latitude_degrees,
+            :longitude_degrees,
+            :observed_at)
         end
     end
   end

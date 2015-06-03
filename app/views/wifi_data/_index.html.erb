@@ -4,7 +4,7 @@
       <th>Num hotspots</th>
       <th>Lat</th>
       <th>Long</th>
-      <th>Uploaded at</th>
+      <th>Observed at</th>
     </tr>
   </thead>
   <tbody>
@@ -13,7 +13,7 @@
         <td><%= wifi_datum.num_wifi_hotspots %></td>
         <td><%= wifi_datum.latitude_degrees %></td>
         <td><%= wifi_datum.longitude_degrees %></td>
-        <td><%=l wifi_datum.created_at %></td>
+        <td><%=l wifi_datum.observed_at %></td>
       </tr>
     <% end %>
   </tbody>

@@ -45,7 +45,8 @@ module Api
 	      params.require(:imsi_datum).permit(
 	      	:aimsicd_threat_level,
 	      	:latitude_degrees,
-	      	:longitude_degrees
+	      	:longitude_degrees,
+	      	:observed_at
 	   		)
 	    end
 	end
