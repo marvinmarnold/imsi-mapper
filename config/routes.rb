@@ -2,7 +2,7 @@ Rails.application.routes.draw do
   resources :wifi_data
   get 'pages/index'
 
-  namespace :api do
+  namespace :api, defaults: {format: 'json'} do
     namespace :v1 do
       resources :imsi_data
       resources :wifi_data

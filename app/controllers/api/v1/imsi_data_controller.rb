@@ -2,60 +2,36 @@ module Api
 	module V1
 	class ImsiDataController < ApplicationController
 	  before_action :set_imsi_datum, only: [:show, :edit, :update, :destroy]
+	  respond_to :json
 
 	  # GET /imsi_data
 	  # GET /imsi_data.json
 	  def index
-	    @imsi_data = ImsiDatum.all
+	    respond_with ImsiDatum.all
 	  end
 
 	  # GET /imsi_data/1
 	  # GET /imsi_data/1.json
 	  def show
-	  end
-
-	  # GET /imsi_data/new
-	  def new
-	    @imsi_datum = ImsiDatum.new
-	  end
-
-	  # GET /imsi_data/1/edit
-	  def edit
+	  	respond_with @imsi_datum
 	  end
 
 	  # POST /imsi_data
 	  # POST /imsi_data.json
 	  def create
-	    @imsi_datum = ImsiDatum.new(imsi_datum_params)
-
-	    respond_to do |format|
-	      if @imsi_datum.save
-	      	format.json { render :show, status: :created, location: @imsi_datum }
-	      else
-	        format.json { render json: @imsi_datum.errors, status: :unprocessable_entity }
-	      end
-	    end
+	    respond_with ImsiDatum.create imsi_datum_params
 	  end
 
 	  # PATCH/PUT /imsi_data/1
 	  # PATCH/PUT /imsi_data/1.json
 	  def update
-	    respond_to do |format|
-	      if @imsi_datum.update(imsi_datum_params)	        
-	      	format.json { render :show, status: :ok, location: @imsi_datum }
-	      else
-	        format.json { render json: @imsi_datum.errors, status: :unprocessable_entity }
-	      end
-	    end
+	  	respond_with @imsi_datum.update imsi_datum_params
 	  end
 
 	  # DELETE /imsi_data/1
 	  # DELETE /imsi_data/1.json
 	  def destroy
-	    @imsi_datum.destroy
-	    respond_to do |format|
-	      format.json { head :no_content }
-	    end
+	    respond_with @imsi_datum.destroy
 	  end
 
 	  private
