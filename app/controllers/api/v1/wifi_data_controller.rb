@@ -2,6 +2,7 @@ module Api
   module V1
     class WifiDataController < ApplicationController
       before_action :set_wifi_datum, only: [:show, :edit, :update, :destroy]
+      respond_to :json
 
       # GET /wifi_data
       # GET /wifi_data.json
