@@ -1,12 +1,12 @@
 module Api
 	module V1
 	class ImsiDataController < ApplicationController
-		action :set_access
+		before_action :set_access
 
 		def set_access
 		  @response.headers["Access-Control-Allow-Origin"] = "*"
 		end
-		
+
 	  before_action :set_imsi_datum, only: [:show, :edit, :update, :destroy]
 	  respond_to :json
 
