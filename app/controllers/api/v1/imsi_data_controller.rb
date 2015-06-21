@@ -4,10 +4,19 @@ module Api
 	  before_action :set_imsi_datum, only: [:show, :edit, :update, :destroy]
 	  respond_to :json
 
+	  class ImsiDatum < ::ImsiDatum
+	  	def as_json(options={})
+	  		super.merge(
+	  			"aimsicd_threat_level" =>
+	  			ImsiDatum.human_threat_level(aimsicd_threat_level)
+	  	)
+	  	end
+	  end
+
 	  # GET /imsi_data
 	  # GET /imsi_data.json
 	  def index
-	    respond_with ImsiDatum.where.not(aimsicd_threat_level: "5")
+	    respond_with ImsiDatum.all#ImsiDatum.where.not(aimsicd_threat_level: "5")
 	  end
 
 	  # GET /imsi_data/1
