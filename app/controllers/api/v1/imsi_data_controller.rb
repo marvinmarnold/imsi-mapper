@@ -7,7 +7,7 @@ module Api
 	  # GET /imsi_data
 	  # GET /imsi_data.json
 	  def index
-	    respond_with ImsiDatum.all
+	    respond_with ImsiDatum.where.not(aimsicd_threat_level: "5")
 	  end
 
 	  # GET /imsi_data/1
