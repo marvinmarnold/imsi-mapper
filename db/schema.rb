@@ -13,6 +13,9 @@
 
 ActiveRecord::Schema.define(version: 20150730032720) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "stingray_readings", force: :cascade do |t|
     t.datetime "observed_at"
     t.string   "version"
