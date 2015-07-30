@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class WifiDatumTest < ActiveSupport::TestCase
+class StingrayReadingTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

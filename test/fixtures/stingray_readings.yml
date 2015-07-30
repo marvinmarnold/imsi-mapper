@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  observed_at: 2015-07-29 22:27:20
+  version: MyString
+  lat: 9.99
+  long: 9.99
+  threat_level: 1
+
+two:
+  observed_at: 2015-07-29 22:27:20
+  version: MyString
+  lat: 9.99
+  long: 9.99
+  threat_level: 1

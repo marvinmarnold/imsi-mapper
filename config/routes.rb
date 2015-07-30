@@ -1,16 +1,5 @@
 Rails.application.routes.draw do
-  resources :wifi_data
-  get 'pages/index'
-
-  namespace :api, defaults: {format: 'json'} do
-    namespace :v1 do
-      resources :imsi_data
-      resources :wifi_data
-    end
-  end
-
-  resources :imsi_data
-  root to: "pages#index"
+  resources :stingray_readings, except: [:new, :edit]
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

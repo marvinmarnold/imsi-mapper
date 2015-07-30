@@ -5,3 +5,4 @@
 #
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
+StingrayReading.create(version: "1", lat: 4.0, long: 3.0, threat_level: 0, observed_at: Time.now)
