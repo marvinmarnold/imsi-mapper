@@ -54,6 +54,6 @@ class StingrayReadingsController < ApplicationController
     end
 
     def stingray_reading_params
-      params.require(:stingray_reading).permit(:observed_at, :version, :lat, :long, :threat_level)
+      params.require(:stingray_reading).permit(:observed_at, :version, :lat, :long, :threat_level, :location)
     end
 end
