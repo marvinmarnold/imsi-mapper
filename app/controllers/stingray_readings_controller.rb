@@ -6,6 +6,18 @@ class StingrayReadingsController < ApplicationController
   def index
     @stingray_readings = StingrayReading.all
 
+    #myparams = 
+    #  { "stingray_reading" =>
+    #    {  "version" => "1",
+    #       "lat" => "35.00",
+    #       "long" => "100.00",
+    #       "threat_level" => "0",
+    #       "observed_at" => "2015-08-06T06:26:53.169Z"
+    #    }
+    #  }.to_param
+      
+    #STDERR.puts myparams
+
     render json: @stingray_readings
   end
 
@@ -22,9 +34,18 @@ class StingrayReadingsController < ApplicationController
 
     if @stingray_reading.save
       render json: @stingray_reading, status: :created, location: @stingray_reading
+      
+      #vzm-todo: and should we allow updates to "location" field from outside?
+      if @stingray_reading.set_location() 
+        @stingray_reading.save()
+      end
+    
     else
       render json: @stingray_reading.errors, status: :unprocessable_entity
     end
+    
+    
+    
   end
 
   # PATCH/PUT /stingray_readings/1
@@ -34,6 +55,13 @@ class StingrayReadingsController < ApplicationController
 
     if @stingray_reading.update(stingray_reading_params)
       head :no_content
+      
+      #vzm-todo: only update if lat/long changed 
+      #vzm-todo: and should this logic be in the model, say in "before_update"
+      if @stingray_reading.set_location() 
+        @stingray_reading.save()
+      end
+
     else
       render json: @stingray_reading.errors, status: :unprocessable_entity
     end
@@ -54,6 +82,8 @@ class StingrayReadingsController < ApplicationController
     end
 
     def stingray_reading_params
-      params.require(:stingray_reading).permit(:observed_at, :version, :lat, :long, :threat_level, :location)
+      #vzm: do not permit remote setting of flag param
+      #vzm: don't let user set location, correct? we look that up
+      params.require(:stingray_reading).permit(:observed_at, :version, :lat, :long, :threat_level) #, :location)
     end
 end
