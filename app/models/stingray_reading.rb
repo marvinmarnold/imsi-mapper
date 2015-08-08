@@ -12,17 +12,18 @@ class StingrayReading < ActiveRecord::Base
   
   # looks up location based on lat/long via Google (free & throttled) geocoding 
   # service.  returns false (indicating do not save) in error conditions when
-  # seeding flag is set, so we only seed database with valid entries. 
+  # SEEDING flag is true, so that we only seed db wiht entries that have locations 
+  # values
   #
-  # vzm-todo: note on geocode throttling here: this only helps the current thread 
-  # throttle its requests, won't help (much) when multiple devices send in 
-  # readings. use a queue in a separate process to fill in location values#
+  # vzm-todo: note on geocode throttling herein: this only helps the current thread 
+  # throttle its requests and won't help (much) when multiple devices send in 
+  # readings. could use a queue in a separate process to populate location values.
   def set_location
     
     l = "Unknown Location"
     require 'net/http'
     
-    # vzm: if flag is true, skip if location doesn't exist or not returned:
+    # vzm: if flag is true, return false if location unknown or none returned
     @bSeeding = self.flag & Flags::SEEDING > 0 
     
     uri = URI("http://maps.googleapis.com/maps/api/geocode/xml")
@@ -37,7 +38,7 @@ class StingrayReading < ActiveRecord::Base
       response_json = Hash.from_xml(response.body) if response.is_a?(Net::HTTPSuccess)
       
       if response_json 
-        #puts response_json.map{|k,v| "#{k}=#{v}"}.join(' ')
+        #puts response_json.map{|k,v| "#{k}=#{v}"}.join(' ') # for debugging
       
         if response_json["GeocodeResponse"]["result"] 
           results = response_json["GeocodeResponse"]["result"]
@@ -58,12 +59,8 @@ class StingrayReading < ActiveRecord::Base
           # use a capped exponential backoff for timeout:
           @secondsDelay *= 2
           @retryCount = @retryCount + 1
-          if @secondsDelay > 128
-              @secondsDelay = 128
-          end
-          if @retryCount >= 10
-              break
-          end
+          @secondsDelay = 128 if @secondsDelay > 128
+          break if @retryCount >= 10
           next # repeat loop
         elsif response_json["GeocodeResponse"]["status"] == "ZERO_RESULTS" 
           STDERR.puts "no geocode result"
@@ -82,6 +79,7 @@ class StingrayReading < ActiveRecord::Base
     
   private
   
+    # vzm: appears unused
     def googleMapsEndpointFor(latitude, longitude)
       "http://maps.googleapis.com/maps/api/geocode/xml?latlng=" + latitude + "," + longitude + "&sensor=true"
     end
