@@ -1,6 +1,9 @@
 class StingrayReadingsController < ApplicationController
+  
   before_action :set_stingray_reading, only: [:show, :update, :destroy]
 
+  @bAuthorized = false #placeholder
+  
   # GET /stingray_readings
   # GET /stingray_readings.json
   def index
@@ -11,8 +14,10 @@ class StingrayReadingsController < ApplicationController
     # so change next line as needed:
     @stingray_readings = StingrayReading.where("threat_level > 3")
     
-    @stingray_readings.each do |reading|
-        roundLatLong(reading)
+    if (!@bIsAuthorized)
+      @stingray_readings.each do |reading|
+          roundLatLong(reading)
+      end
     end
     render json: @stingray_readings
   end
@@ -32,10 +37,7 @@ class StingrayReadingsController < ApplicationController
     if @stingray_reading.save
       render json: @stingray_reading, status: :created, location: @stingray_reading
       
-      # vzm: we could put the geocode call in separate thread to free up server to 
-      # handle more requests, but at this low use level, thread overhead not 
-      # worth it. would be better to run a separate process to use a queue to
-      # call geocode api if we continue to use throttled api and use goes up
+      # vzm: see https://github.com/collectiveidea/delayed_job
       if @stingray_reading.set_location() 
         @stingray_reading.save()
       end
@@ -55,7 +57,7 @@ class StingrayReadingsController < ApplicationController
       head :no_content
       
       #vzm-todo: only update if lat/long changed 
-      #vzm-todo: and should this logic be in the model, like in a "before_update"
+      #vzm-todo:this logic could be in the model, like in a "before_update"
       if @stingray_reading.set_location() 
         @stingray_reading.save()
       end
@@ -78,13 +80,15 @@ class StingrayReadingsController < ApplicationController
     def set_stingray_reading
       @stingray_reading = StingrayReading.find(params[:id])
       
-      # vzm-todo: added token checking logic later before rounding
-      roundLatLong(@stingray_reading)
+      if (!@bIsAuthorized) 
+        roundLatLong(@stingray_reading)
+      end
 
     end
 
     # round the lat/long of the given reading to 3 decimal places
     def roundLatLong(reading)
+      # vzm-todo: might want to store rounded values:
       reading.lat = (reading.lat * 1000).floor / 1000.0
       reading.long = (reading.long * 1000).floor / 1000.0
     end

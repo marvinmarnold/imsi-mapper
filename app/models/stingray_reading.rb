@@ -11,7 +11,7 @@ class StingrayReading < ActiveRecord::Base
   LONGEST_NAP_IN_SECONDS = 8
 
   module Flags
-    SEEDING = 0 # we don't need to save this value, really...
+    SEEDING = 0 # we don't need to save this value, really
     PREPOPULATED = 1
     RESERVED_FLAG_3 = 2
     RESERVED_FLAG_4 = 4 
@@ -86,6 +86,7 @@ class StingrayReading < ActiveRecord::Base
     self.flag |= ( bVal ? 1 : 0  )
   end
   
+  # returns true if seeding flag set, false if not
   def seeding
     return (self.flag & 0b0000_0001) > 0
   end    
@@ -102,6 +103,7 @@ class StingrayReading < ActiveRecord::Base
     self.flag |= (( bVal ? 1 : 0  ) << Flags::PREPOPULATED)
   end
   
+  # returns true if prepoluated flag set, false if not
   def prepopulated
     return (self.flag & 0b0000_0010) > 0 
   end    
