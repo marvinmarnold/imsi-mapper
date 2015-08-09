@@ -10,7 +10,8 @@ require 'csv'
 gps = CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
     
   STDERR.puts "Processing #{row}"
-  @stingray_reading = StingrayReading.new( version: "1", lat: row[0], long: row[1], threat_level: 0, observed_at: Time.now)
+  randthreat = rand(0..5)
+  @stingray_reading = StingrayReading.new( version: "1", lat: row[0], long: row[1], threat_level: randthreat, observed_at: Time.now)
   @stingray_reading.seeding= true
   @stingray_reading.prepopulated= true
   if @stingray_reading.set_location() 
@@ -19,6 +20,6 @@ gps = CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
   else
     STDERR.puts "no location value. skipping"
   end
-  sleep(0.2) # to avoid overloading google's geocode api, throttle to 5 req/second
-  #break
+ #  sleep(0.2) # to avoid overloading google's geocode api, throttle to 5 req/second
+ # break
 end
