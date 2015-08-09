@@ -7,17 +7,18 @@
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 require 'csv'
 
-@bSeeding = StingrayReading::Flags::SEEDING 
 gps = CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
     
   STDERR.puts "Processing #{row}"
-  @stingray_reading = StingrayReading.new(flag: @bSeeding, version: "1", lat: row[0], long: row[1], threat_level: 0, observed_at: Time.now)
+  @stingray_reading = StingrayReading.new( version: "1", lat: row[0], long: row[1], threat_level: 0, observed_at: Time.now)
+  @stingray_reading.seeding= true
+  @stingray_reading.prepopulated= true
   if @stingray_reading.set_location() 
-    @stingray_reading.flag = 0 # clear our seeding flag, so updating this entry later follows correct logic  
+    @stingray_reading.seeding= false # clear our seeding flag, we're done doing that
     @stingray_reading.save()
+  else
+    STDERR.puts "no location value. skipping"
   end
-  
-  # note, can only process 2500 over 24 hour period
-  sleep(0.2) # to avoid overloading the geocode api, throttle to 5 req/second
+  sleep(0.2) # to avoid overloading google's geocode api, throttle to 5 req/second
   #break
 end
