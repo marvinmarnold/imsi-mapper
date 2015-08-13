@@ -5,7 +5,7 @@ RSpec.describe StingrayReading, :type => :model do
     context "with 0 or more readings" do
         it "handles geocode timeout errors" do
       
-            iThreatLevel = rand(0..5)
+            iThreatLevel = rand(15..20)
             reading = StingrayReading.new( version: "1", lat: "35.084", long:"-85.751", threat_level: iThreatLevel, observed_at: Time.now)
             
             reading.useFakeTimeoutGoogleGeocoder

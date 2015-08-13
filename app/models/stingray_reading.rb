@@ -2,13 +2,17 @@ require 'net/http'
 
 class StingrayReading < ActiveRecord::Base
   
+  # round off all lat longs to four decimals before storing them:
   before_create :roundLatLongToFourDecimals
+  after_initialize :after_initialize
+  
  
-  # class instance vars for setting lengths of naps )(for querying overloaded
-  # geocode API):
+  # class instance vars for setting number and lengths of naps (when querying overloaded
+  # google geocode API):
   MAX_NUMBER_OF_NAPS = 5
   LONGEST_NAP_IN_SECONDS = 8
   
+  # bit flags for our flag field
   module Flags
     RESERVED_FLAG = 0
     PREPOPULATED = 1
@@ -17,6 +21,7 @@ class StingrayReading < ActiveRecord::Base
     #.. 8, etc
   end
   
+  # initialize our instance vars
   def after_initialize
       @symGeocoder = :mapbox # :google
       @sMapboxAccessToken = "pk.eyJ1IjoibWFjd2FuZyIsImEiOiI2N2FhMGUzZWQzZjhlMTU3YzM4ZTBiZmQ5ZDViMGMxNCJ9.2sV6xIsWgQ7UAv4Df0w0ZA"
@@ -24,19 +29,24 @@ class StingrayReading < ActiveRecord::Base
       @sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
   end
   
-  
+  # call a reverse geocode API to set our location field to the placename 
+  # string corresponding to our lat & long 
   def reverseGeocode
     if @symGeocoder == :mapbox
-        reverseGeocodeViaMapBox
+        return reverseGeocodeViaMapBox
     elsif @symGeocoder == :google
-        reverseGeocodeViaGoogle
+        return reverseGeocodeViaGoogle
     end
+    
+    STDERR.puts "no geocoder set: #{@symGeocoder}"
+    return false
     
   end
   
   
   def useGoogleGeocoder
     @symGeocoder = :google
+    @sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
   end  
 
   # to test time out with rspec
@@ -150,7 +160,7 @@ class StingrayReading < ActiveRecord::Base
   
     # nap, and return true if should continue trying
     def napAndTryAgain?()
-      STDERR.puts "geocode throttling us. resting for #{@iSecondsToNap} secs (retry ##{@iNumberOfNaps}/#{MAX_NUMBER_OF_NAPS})" 
+      STDERR.puts "throttle. resting for #{@iSecondsToNap} secs (retry ##{@iNumberOfNaps}/#{MAX_NUMBER_OF_NAPS})" 
       sleep(@iSecondsToNap)
       # use a capped exponential backoff for timeout:
       @iSecondsToNap *= 2
