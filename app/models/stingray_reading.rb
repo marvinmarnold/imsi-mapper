@@ -128,8 +128,8 @@ class StingrayReading < ActiveRecord::Base
         response_json = Hash.from_xml(response.body) if response.is_a?(Net::HTTPSuccess)
         
         if response_json 
-          if response_json["@symGeocoderesponse"]["result"] 
-            results = response_json["@symGeocoderesponse"]["result"]
+          if response_json["GeocodeResponse"]["result"] 
+            results = response_json["GeocodeResponse"]["result"]
             results.each do |result|
               if result.is_a?(Hash) && result.has_key?("type") && result["type"] == "postal_code"
                 l = result["formatted_address"]
@@ -137,10 +137,10 @@ class StingrayReading < ActiveRecord::Base
             end
             self.location = l
             return true
-          elsif response_json["@symGeocoderesponse"]["status"] == "OVER_QUERY_LIMIT" 
+          elsif response_json["GeocodeResponse"]["status"] == "OVER_QUERY_LIMIT" 
             next if napAndTryAgain?()  
             return false 
-          elsif response_json["@symGeocoderesponse"]["status"] == "ZERO_RESULTS" 
+          elsif response_json["GeocodeResponse"]["status"] == "ZERO_RESULTS" 
             #STDERR.puts "no geocode result"
             return false
           end

@@ -10,7 +10,7 @@ RSpec.describe StingrayReadingsController, type: :controller do
         end
     
         describe "index" do
-            it "renders the index template" do
+            it "renders an empty json response" do
               get :index
               expect(response.body).to eq "[]"
             end
