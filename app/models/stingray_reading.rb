@@ -4,12 +4,10 @@ class StingrayReading < ActiveRecord::Base
   
   before_create :roundLatLongToFourDecimals
  
-
   # class instance vars for setting lengths of naps )(for querying overloaded
   # geocode API):
   MAX_NUMBER_OF_NAPS = 5
   LONGEST_NAP_IN_SECONDS = 8
-  GEOCODER = :mapbox # :google
   
   module Flags
     RESERVED_FLAG = 0
@@ -19,21 +17,38 @@ class StingrayReading < ActiveRecord::Base
     #.. 8, etc
   end
   
+  def after_initialize
+      @symGeocoder = :mapbox # :google
+      @sMapboxAccessToken = "pk.eyJ1IjoibWFjd2FuZyIsImEiOiI2N2FhMGUzZWQzZjhlMTU3YzM4ZTBiZmQ5ZDViMGMxNCJ9.2sV6xIsWgQ7UAv4Df0w0ZA"
+      @sMapBoxBaseURL = "https://api.mapbox.com/v4/geocode/";
+      @sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
+  end
+  
+  
   def reverseGeocode
-    if GEOCODER == :mapbox
+    if @symGeocoder == :mapbox
         reverseGeocodeViaMapBox
-    elsif GEOCODER == :google
+    elsif @symGeocoder == :google
         reverseGeocodeViaGoogle
     end
     
   end
   
   
+  def useGoogleGeocoder
+    @symGeocoder = :google
+  end  
+
+  # to test time out with rspec
+  def useFakeTimeoutGoogleGeocoder
+    @symGeocoder = :google
+    @sGoogleGeocodeURL= "https://stinger-api-vannm.c9.io/mock" # for testing timeout logic
+  end  
   
-  def geocodeurl=(url)
-    @sGoogleGeocodeURL = url
-  end
-  
+  def useMapboxGeocoder
+    @symGeocoder = :mapbox
+  end  
+
   
   # set prepopulated to true or false
   # track which values were initially prepopulated.
@@ -52,19 +67,15 @@ class StingrayReading < ActiveRecord::Base
   private
   
   
+    # query mapbox with lat long and fill in location value of reading with result
+    # return false if no result, true otherwise
     def reverseGeocodeViaMapBox
       
       # mapbox url format = "https://api.mapbox.com/v4/geocode/{dataset}/{lon},{lat}.json?access_token=<your access token>";
   
-      # mapbox access token
-      sMapboxAccessToken = "pk.eyJ1IjoibWFjd2FuZyIsImEiOiI2N2FhMGUzZWQzZjhlMTU3YzM4ZTBiZmQ5ZDViMGMxNCJ9.2sV6xIsWgQ7UAv4Df0w0ZA"
+      longlat = [self.long, self.lat].join(",")
       
-      # mapbox url:
-      sMapBoxBaseURL = "https://api.mapbox.com/v4/geocode/";
-    
-      latlng = [self.long, self.lat].join(",")
-      
-      sUrl = "#{sMapBoxBaseURL}mapbox.places/#{latlng}.json?access_token=#{sMapboxAccessToken}"
+      sUrl = "#{@sMapBoxBaseURL}mapbox.places/#{longlat}.json?access_token=#{@sMapboxAccessToken}"
       
       #STDERR.puts "mapbox url: #{sUrl}"
   
@@ -84,7 +95,7 @@ class StingrayReading < ActiveRecord::Base
     
     
     # looks up location based on lat/long via Google (free & throttled) geocoding 
-    # service. 
+    # service. returns true if it responds with known location, false otherwise
     #
     # cc-todo: note on geocode throttling herein: this only helps the current thread 
     # throttle its requests and won't help (much) when multiple devices send in 
@@ -93,9 +104,7 @@ class StingrayReading < ActiveRecord::Base
       
       l = "Unknown Location"
   
-      sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
-  
-      uri = URI(sGoogleGeocodeURL)
+      uri = URI(@sGoogleGeocodeURL)
       params = { :latlng => [self.lat, self.long].join(","), :sensor => true }
       uri.query = URI.encode_www_form(params)
   
@@ -106,34 +115,30 @@ class StingrayReading < ActiveRecord::Base
         response_json = Hash.from_xml(response.body) if response.is_a?(Net::HTTPSuccess)
         
         if response_json 
-          if response_json["GeocodeResponse"]["result"] 
-            results = response_json["GeocodeResponse"]["result"]
+          if response_json["@symGeocoderesponse"]["result"] 
+            results = response_json["@symGeocoderesponse"]["result"]
             results.each do |result|
               if result.is_a?(Hash) && result.has_key?("type") && result["type"] == "postal_code"
                 l = result["formatted_address"]
               end
             end
             self.location = l
-            break
-            
-          elsif response_json["GeocodeResponse"]["status"] == "OVER_QUERY_LIMIT" 
-          
+            return true
+          elsif response_json["@symGeocoderesponse"]["status"] == "OVER_QUERY_LIMIT" 
             next if napAndTryAgain?()  
-            break 
-            
-          elsif response_json["GeocodeResponse"]["status"] == "ZERO_RESULTS" 
+            return false 
+          elsif response_json["@symGeocoderesponse"]["status"] == "ZERO_RESULTS" 
             #STDERR.puts "no geocode result"
-            break 
+            return false
           end
         else
           # cc: haven't seen this code path taken. (likely only on network error?)
           STDERR.puts "no response from geocode. network error?"
           # sleep and try again a few times:
-          napAndTryAgain?() ? next : break 
+          napAndTryAgain?() ? next : (return false) 
         end
       end
       
-      return true
   
     end
     

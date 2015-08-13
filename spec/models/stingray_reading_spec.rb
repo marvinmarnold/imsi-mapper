@@ -8,9 +8,8 @@ RSpec.describe StingrayReading, :type => :model do
             iThreatLevel = rand(0..5)
             reading = StingrayReading.new( version: "1", lat: "35.084", long:"-85.751", threat_level: iThreatLevel, observed_at: Time.now)
             
-            reading.geocodeurl= "http://combiconsulting.com/_things/stingmock.php" # for testing timeout logic
-
-            reading.set_location() 
+            reading.useFakeTimeoutGoogleGeocoder
+            reading.reverseGeocode
             
             expect(reading.location).to eq(nil) 
     
