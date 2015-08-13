@@ -12,7 +12,7 @@ StingrayReading.delete_all
 gps = CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
     
   STDERR.puts "Processing #{row}"
-  iThreatLevel = rand(0..15)
+  iThreatLevel = rand(15..20)
   @stingray_reading = StingrayReading.new( version: "1", lat: row[0], long: row[1], threat_level: iThreatLevel, observed_at: Time.now)
   @stingray_reading.seeding= true
   @stingray_reading.prepopulated= true

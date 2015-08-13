@@ -11,11 +11,7 @@ class StingrayReadingsController < ApplicationController
   # GET /stingray_readings.json
   def index
 
-    # vzm-todo: added token checking logic later before rounding
-    
-    # vzm: @marvin, not sure how integers correspond to red and skull levels,
-    # so change next line as needed:
-    @stingray_readings = StingrayReading.where("threat_level > 10")
+    @stingray_readings = StingrayReading.where("threat_level >= 15")
     
     if (!@bIsAuthorized)
       @stingray_readings.each do |reading|
