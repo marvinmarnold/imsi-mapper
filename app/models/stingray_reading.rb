@@ -1,15 +1,16 @@
+require 'net/http'
+
 class StingrayReading < ActiveRecord::Base
   
-  # before_create :set_location #turn on while seeding
-  
-  GOOGLE_GEOCODE_URL = "http://maps.googleapis.com/maps/api/geocode/xml"
-  #GOOGLE_GEOCODE_URL = "http://combiconsulting.com/_things/stingmock.php" # for testing timeout logic
-  
+  before_create :roundLatLongToFourDecimals
+ 
+
   # class instance vars for setting lengths of naps )(for querying overloaded
   # geocode API):
   MAX_NUMBER_OF_NAPS = 5
   LONGEST_NAP_IN_SECONDS = 8
-
+  GEOCODER = :mapbox # :google
+  
   module Flags
     SEEDING = 0 # we don't need to save this value, really
     PREPOPULATED = 1
@@ -18,65 +19,21 @@ class StingrayReading < ActiveRecord::Base
     #.. 8, etc
   end
   
-  # looks up location based on lat/long via Google (free & throttled) geocoding 
-  # service.  returns false (indicating do not save) in error conditions when
-  # SEEDING flag is true, so that we only seed db wiht entries that have locations 
-  # values
-  #
-  # vzm-todo: note on geocode throttling herein: this only helps the current thread 
-  # throttle its requests and won't help (much) when multiple devices send in 
-  # readings. could use a queue in a separate process to populate location values.
-  def set_location
-    
-    l = "Unknown Location"
-    require 'net/http'
-    
-    uri = URI(GOOGLE_GEOCODE_URL)
-    params = { :latlng => [self.lat, self.long].join(","), :sensor => true }
-    uri.query = URI.encode_www_form(params)
-
-    considerNapping()
-    while (true) do
-      response = Net::HTTP.get_response(uri)
-  
-      response_json = Hash.from_xml(response.body) if response.is_a?(Net::HTTPSuccess)
-      
-      if response_json 
-        
-        if response_json["GeocodeResponse"]["result"] 
-          results = response_json["GeocodeResponse"]["result"]
-          results.each do |result|
-            if result.is_a?(Hash) && result.has_key?("type") && result["type"] == "postal_code"
-              l = result["formatted_address"]
-            end
-          end
-
-          STDERR.puts l
-          (l == 'Unknown Location' and self.seeding) ? (return false) : self.location = l
-          break
-          
-        elsif response_json["GeocodeResponse"]["status"] == "OVER_QUERY_LIMIT" 
-        
-          next if napAndTryAgain()  
-          self.seeding ? (return false) : break 
-          
-        elsif response_json["GeocodeResponse"]["status"] == "ZERO_RESULTS" 
-          STDERR.puts "no geocode result"
-           # marvin: shall we not seed db with lat/longs in middle of nowhere?
-          self.seeding ? (return false) : break 
-        end
-      else
-        # vzm: haven't seen this code path taken. (likely only on network error?)
-        STDERR.puts "no response from geocode. network error?"
-        return false if self.seeding
-        # if not seeding, sleep and try again a few times:
-        napAndTryAgain() ? next : break 
-      end
+  def reverseGeocode
+    if GEOCODER == :mapbox
+        reverseGeocodeViaMapBox
+    elsif GEOCODER == :google
+        reverseGeocodeViaGoogle
     end
     
-    return true
-
   end
+  
+  
+  
+  def geocodeurl=(url)
+    @sGoogleGeocodeURL = url
+  end
+  
   
   # set seeding to true or false
   def seeding=(bVal)
@@ -110,6 +67,99 @@ class StingrayReading < ActiveRecord::Base
 
   private
   
+  
+  def reverseGeocodeViaMapBox
+    
+    # mapbox url format = "https://api.mapbox.com/v4/geocode/{dataset}/{lon},{lat}.json?access_token=<your access token>";
+
+    # mapbox access token
+    sMapboxAccessToken = "pk.eyJ1IjoibWFjd2FuZyIsImEiOiI2N2FhMGUzZWQzZjhlMTU3YzM4ZTBiZmQ5ZDViMGMxNCJ9.2sV6xIsWgQ7UAv4Df0w0ZA"
+    
+    # mapbox url:
+    sMapBoxBaseURL = "https://api.mapbox.com/v4/geocode/";
+  
+    latlng = [self.long, self.lat].join(",")
+    
+    sUrl = "#{sMapBoxBaseURL}mapbox.places/#{latlng}.json?access_token=#{sMapboxAccessToken}"
+    
+    #STDERR.puts "mapbox url: #{sUrl}"
+
+    uri = URI(sUrl)
+    response = Net::HTTP.get_response(uri)
+    j = JSON.parse(response.body) if response.is_a?(Net::HTTPSuccess)
+    
+    return false unless j
+    return false unless j["features"]
+    return false unless j["features"][0] 
+    return false unless j["features"][0]["place_name"]
+    
+    self.location = j["features"][0]["place_name"]
+    return true
+
+  end
+  
+  
+  # looks up location based on lat/long via Google (free & throttled) geocoding 
+  # service.  returns false (indicating do not save) in error conditions when
+  # SEEDING flag is true, so that we only seed db wiht entries that have locations 
+  # values
+  #
+  # vzm-todo: note on geocode throttling herein: this only helps the current thread 
+  # throttle its requests and won't help (much) when multiple devices send in 
+  # readings. could use a queue in a separate process to populate location values.
+  def reverseGeocodeViaGoogle
+    
+    l = "Unknown Location"
+
+    sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
+
+    uri = URI(sGoogleGeocodeURL)
+    params = { :latlng => [self.lat, self.long].join(","), :sensor => true }
+    uri.query = URI.encode_www_form(params)
+
+    considerNapping()
+    while (true) do
+      response = Net::HTTP.get_response(uri)
+  
+      response_json = Hash.from_xml(response.body) if response.is_a?(Net::HTTPSuccess)
+      
+      if response_json 
+        
+        if response_json["GeocodeResponse"]["result"] 
+          results = response_json["GeocodeResponse"]["result"]
+          results.each do |result|
+            if result.is_a?(Hash) && result.has_key?("type") && result["type"] == "postal_code"
+              l = result["formatted_address"]
+            end
+          end
+
+          #STDERR.puts "google location: #{l}"
+          (l == 'Unknown Location' and self.seeding) ? (return false) : self.location = l
+          break
+          
+        elsif response_json["GeocodeResponse"]["status"] == "OVER_QUERY_LIMIT" 
+        
+          next if napAndTryAgain?()  
+          self.seeding ? (return false) : break 
+          
+        elsif response_json["GeocodeResponse"]["status"] == "ZERO_RESULTS" 
+          #STDERR.puts "no geocode result"
+           # marvin: shall we not seed db with lat/longs in middle of nowhere?
+          self.seeding ? (return false) : break 
+        end
+      else
+        # vzm: haven't seen this code path taken. (likely only on network error?)
+        #STDERR.puts "no response from geocode. network error?"
+        return false if self.seeding
+        # if not seeding, sleep and try again a few times:
+        napAndTryAgain?() ? next : break 
+      end
+    end
+    
+    return true
+
+  end
+  
     # initialize our variables to track how long and how many times to nap
     def considerNapping()
       @iSecondsToNap = 2
@@ -117,7 +167,7 @@ class StingrayReading < ActiveRecord::Base
     end
   
     # nap, and return true if should continue trying
-    def napAndTryAgain()
+    def napAndTryAgain?()
       STDERR.puts "geocode throttling us. resting for #{@iSecondsToNap} secs (retry ##{@iNumberOfNaps}/#{MAX_NUMBER_OF_NAPS})" 
       sleep(@iSecondsToNap)
       # use a capped exponential backoff for timeout:
@@ -132,5 +182,11 @@ class StingrayReading < ActiveRecord::Base
       "http://maps.googleapis.com/maps/api/geocode/xml?latlng=" + latitude + "," + longitude + "&sensor=true"
     end
     
+     # round the lat/long of the given reading to 4 decimal places
+    def roundLatLongToFourDecimals()
+      # vzm-todo: might want to store rounded values:
+      self.lat = (self.lat * 10000).floor / 10000.0
+      self.long = (self.long * 10000).floor / 10000.0
+    end
     
 end

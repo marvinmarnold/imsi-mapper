@@ -21,6 +21,10 @@ default: &default
   # http://guides.rubyonrails.org/configuring.html#database-pooling
   pool: 5
 
+test:
+  <<: *default
+  database: imsi-mapper_test
+
 development:
   <<: *default
   database: imsi-mapper_development

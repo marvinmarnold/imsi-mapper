@@ -15,7 +15,7 @@ class StingrayReadingsController < ApplicationController
     
     # vzm: @marvin, not sure how integers correspond to red and skull levels,
     # so change next line as needed:
-    @stingray_readings = StingrayReading.where("threat_level > 3")
+    @stingray_readings = StingrayReading.where("threat_level > 10")
     
     if (!@bIsAuthorized)
       @stingray_readings.each do |reading|
@@ -106,9 +106,8 @@ class StingrayReadingsController < ApplicationController
 
     end
 
-    # round the lat/long of the given reading to 3 decimal places
+    # round the lat/long of the given reading to 3 decimal places for display
     def roundLatLong(reading)
-      # vzm-todo: might want to store rounded values:
       reading.lat = (reading.lat * 1000).floor / 1000.0
       reading.long = (reading.long * 1000).floor / 1000.0
     end
