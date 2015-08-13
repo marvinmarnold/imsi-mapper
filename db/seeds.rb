@@ -14,14 +14,12 @@ gps = CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
   STDERR.puts "Processing #{row}"
   iThreatLevel = rand(15..20)
   @stingray_reading = StingrayReading.new( version: "1", lat: row[0], long: row[1], threat_level: iThreatLevel, observed_at: Time.now)
-  @stingray_reading.seeding= true
   @stingray_reading.prepopulated= true
   
   # STDERR.puts @stingray_reading.inspect
   
   if @stingray_reading.reverseGeocode 
     @stingray_reading.save()
-    # STDERR.puts "#{row[0]}, #{row[1]}"
   end
   
 end
