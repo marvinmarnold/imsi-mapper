@@ -29,8 +29,9 @@ class StingrayReading < ActiveRecord::Base
       @sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
   end
   
-  # call a reverse geocode API to set our location field to the placename 
-  # string corresponding to our lat & long 
+  # calls configured reverse geocode API: mapbox or google 
+  # this sets our location field to a placename string corresponding to 
+  # our lat & long. assumes lat & long already set. 
   def reverseGeocode
     if @symGeocoder == :mapbox
         return reverseGeocodeViaMapBox
@@ -43,22 +44,24 @@ class StingrayReading < ActiveRecord::Base
     
   end
   
-  
+  def useMapboxGeocoder
+    @symGeocoder = :mapbox
+  end  
+
   def useGoogleGeocoder
     @symGeocoder = :google
     @sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
   end  
 
-  # to test time out with rspec
+  # to test our time out handling with rspec
   def useFakeTimeoutGoogleGeocoder
     @symGeocoder = :google
     @sGoogleGeocodeURL= "https://stinger-api-vannm.c9.io/mock" # for testing timeout logic
   end  
   
-  def useMapboxGeocoder
-    @symGeocoder = :mapbox
-  end  
-
+  ##
+  # GETTERS/SETTERS
+  #
   
   # set prepopulated to true or false
   # track which values were initially prepopulated.
@@ -149,8 +152,12 @@ class StingrayReading < ActiveRecord::Base
         end
       end
       
-  
+      return false
     end
+    
+    ##
+    # sleep code
+    #
     
     # initialize our variables to track how long and how many times to nap
     def considerNapping()
@@ -169,15 +176,19 @@ class StingrayReading < ActiveRecord::Base
       @iNumberOfNaps > MAX_NUMBER_OF_NAPS ?  false : true
     end
   
-    # cc: appears unused
-    def googleMapsEndpointFor(latitude, longitude)
-      "http://maps.googleapis.com/maps/api/geocode/xml?latlng=" + latitude + "," + longitude + "&sensor=true"
-    end
-    
-     # round the lat/long of the given reading to 4 decimal places
+    ##
+    # utils
+    #
+  
+    # round the lat/long of the given reading to 4 decimal places
     def roundLatLongToFourDecimals()
       self.lat = (self.lat * 10000).floor / 10000.0
       self.long = (self.long * 10000).floor / 10000.0
     end
-    
+  
+    # cc: appears unused
+    def googleMapsEndpointFor(latitude, longitude)
+      "http://maps.googleapis.com/maps/api/geocode/xml?latlng=" + latitude + "," + longitude + "&sensor=true"
+    end
+  
 end
