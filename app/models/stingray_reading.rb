@@ -49,7 +49,7 @@ class StingrayReading < ActiveRecord::Base
   end    
   
   # set prepopulated to true or false
-  # vzm: separate flag for this because we clear the seeding flag before saving
+  # cc: separate flag for this because we clear the seeding flag before saving
   # it, as we don't want to use "seeding" logic for handling geocoding errors
   # if we ever UPDATE/PUT the seeded entries. (admittedly, unlikely, but possible)
   # yet we may still want to track which values were initially prepopulated.
@@ -104,7 +104,7 @@ class StingrayReading < ActiveRecord::Base
   # SEEDING flag is true, so that we only seed db wiht entries that have locations 
   # values
   #
-  # vzm-todo: note on geocode throttling herein: this only helps the current thread 
+  # cc-todo: note on geocode throttling herein: this only helps the current thread 
   # throttle its requests and won't help (much) when multiple devices send in 
   # readings. could use a queue in a separate process to populate location values.
   def reverseGeocodeViaGoogle
@@ -148,7 +148,7 @@ class StingrayReading < ActiveRecord::Base
           self.seeding ? (return false) : break 
         end
       else
-        # vzm: haven't seen this code path taken. (likely only on network error?)
+        # cc: haven't seen this code path taken. (likely only on network error?)
         #STDERR.puts "no response from geocode. network error?"
         return false if self.seeding
         # if not seeding, sleep and try again a few times:
@@ -177,14 +177,13 @@ class StingrayReading < ActiveRecord::Base
       @iNumberOfNaps > MAX_NUMBER_OF_NAPS ?  false : true
     end
   
-    # vzm: appears unused
+    # cc: appears unused
     def googleMapsEndpointFor(latitude, longitude)
       "http://maps.googleapis.com/maps/api/geocode/xml?latlng=" + latitude + "," + longitude + "&sensor=true"
     end
     
      # round the lat/long of the given reading to 4 decimal places
     def roundLatLongToFourDecimals()
-      # vzm-todo: might want to store rounded values:
       self.lat = (self.lat * 10000).floor / 10000.0
       self.long = (self.long * 10000).floor / 10000.0
     end

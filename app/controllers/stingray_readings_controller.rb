@@ -36,7 +36,7 @@ class StingrayReadingsController < ApplicationController
     if @stingray_reading.save
       render json: @stingray_reading, status: :created, location: @stingray_reading
       
-      # vzm: see https://github.com/collectiveidea/delayed_job
+      # cc: see https://github.com/collectiveidea/delayed_job
       if @stingray_reading.set_location() 
         @stingray_reading.save()
       end
@@ -55,8 +55,8 @@ class StingrayReadingsController < ApplicationController
     if @stingray_reading.update(stingray_reading_params)
       head :no_content
       
-      #vzm-todo: only update if lat/long changed 
-      #vzm-todo:this logic could be in the model, like in a "before_update"
+      #cc-todo: only update if lat/long changed 
+      #cc-todo:this logic could be in the model, like in a "before_update"
       if @stingray_reading.set_location() 
         @stingray_reading.save()
       end
@@ -109,8 +109,8 @@ class StingrayReadingsController < ApplicationController
     end
 
     def stingray_reading_params
-      #vzm: don't permit remote setting of flag field
-      #vzm: don't let user set location, correct? we look that up ourselves..
+      #cc: don't permit remote setting of flag field
+      #cc: don't let user set location, correct? we look that up ourselves..
       params.require(:stingray_reading).permit(:observed_at, :version, :lat, :long, :threat_level) #, :location)
     end
 end
