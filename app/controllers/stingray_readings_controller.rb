@@ -37,7 +37,7 @@ class StingrayReadingsController < ApplicationController
       render json: @stingray_reading, status: :created, location: @stingray_reading
       
       # cc: see https://github.com/collectiveidea/delayed_job
-      if @stingray_reading.set_location() 
+      if @stingray_reading.reverseGeocode() 
         @stingray_reading.save()
       end
     
@@ -57,7 +57,7 @@ class StingrayReadingsController < ApplicationController
       
       #cc-todo: only update if lat/long changed 
       #cc-todo:this logic could be in the model, like in a "before_update"
-      if @stingray_reading.set_location() 
+      if @stingray_reading.reverseGeocode() 
         @stingray_reading.save()
       end
 

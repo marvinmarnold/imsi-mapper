@@ -2,7 +2,6 @@ require 'net/http'
 
 class StingrayReading < ActiveRecord::Base
   
-
   # round off all lat longs to four decimals before storing them:
   before_create :roundLatLongToFourDecimals
   after_initialize :after_initialize
@@ -97,10 +96,15 @@ class StingrayReading < ActiveRecord::Base
       response = Net::HTTP.get_response(uri)
       j = JSON.parse(response.body) if response.is_a?(Net::HTTPSuccess)
       
+      
       return false unless j
       return false unless j["features"]
+      #STDERR.puts j["features"].inspect
       return false unless j["features"][0] 
-      return false unless j["features"][0]["place_name"]
+      return false unless j["features"][0]["text"]
+      
+      #return self.location = j.try(:[], "features").try(:[],[0]).try(:[],"text")
+      
       
       self.location = j["features"][0]["place_name"]
       return true
@@ -147,7 +151,7 @@ class StingrayReading < ActiveRecord::Base
           end
         else
           # cc: haven't seen this code path taken. (likely only on network error?)
-          STDERR.puts "no response from geocode. network error? #{self.location}"
+          STDERR.puts "no response from geocode. network error?"
           # sleep and try again a few times:
           napAndTryAgain?() ? next : (return false) 
         end
