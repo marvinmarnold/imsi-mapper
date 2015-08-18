@@ -9,7 +9,7 @@ require 'spec_helper'
 describe "StingrayReadings API" do
   
   # cc-todo: very basic test of api GET covered by other tests, 
-  # but might help reveal quickly if we break the basics
+  # but might help reveal problems quickly if we break the basics
   it 'creating a reading directly in the db returns the value via the API' do
     
     #FactoryGirl.create_list(:stingray_reading, 10)
@@ -109,7 +109,6 @@ describe "StingrayReadings API" do
       sr = FactoryGirl.create(:stingray_reading, :threat_level => rand(15..20))
     end
     (1..10).each do |i|
-      # we can't use create_list because it sets all the threat levels the same
       sr = FactoryGirl.create(:stingray_reading, :threat_level => rand(0..14))
     end
 
