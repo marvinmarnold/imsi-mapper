@@ -89,7 +89,6 @@ class StingrayReadingsController < ApplicationController
     def set_authorized
       authenticate_with_http_token do |t, o| 
         @bIsAuthorized = ApiKey.exists?(access_token: t) 
-        # @current_user = user
       end 
     end
 
