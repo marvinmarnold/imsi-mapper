@@ -1,5 +1,10 @@
 require 'rails_helper'
 
+
+
+##
+# model spec for StingrayReading
+#
 # run via: bundle exec rspec
 
 #RSpec.describe Stingray_reading, type: :model do

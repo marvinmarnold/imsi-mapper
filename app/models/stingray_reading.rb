@@ -3,7 +3,7 @@ require 'net/http'
 class StingrayReading < ActiveRecord::Base
   
   # round off all lat longs to four decimals before storing them:
-  before_create :roundLatLongToFourDecimals
+  before_create :roundLatLongToFiveDecimals
   after_initialize :after_initialize
   
  
@@ -185,10 +185,10 @@ class StingrayReading < ActiveRecord::Base
     # utils
     #
   
-    # round the lat/long of the given reading to 4 decimal places
-    def roundLatLongToFourDecimals()
-      self.lat = (self.lat * 10000).floor / 10000.0
-      self.long = (self.long * 10000).floor / 10000.0
+    # round the lat/long of the given reading to 5 decimal places
+    def roundLatLongToFiveDecimals()
+      self.lat = (self.lat * 100000).floor / 100000.0
+      self.long = (self.long * 100000).floor / 100000.0
     end
   
     # cc: appears unused
