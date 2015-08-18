@@ -27,7 +27,7 @@ describe "Factoids API" do
         expect(json.length).to eq(10)
         json.each do |factoid|
           expect(factoid).to include('fact')
-          STDERR.puts factoid
+          #STDERR.puts factoid
         end
       
     end
