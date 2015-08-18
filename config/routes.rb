@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   resources :stingray_readings, except: [:new, :edit]
-  resources :mock
+  resources :factoids, except: [:new, :edit]
+  resources :mock, only: [:create]
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

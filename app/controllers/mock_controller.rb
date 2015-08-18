@@ -5,7 +5,7 @@ class MockController < ApplicationController
     end
     
     def show
-end
+    end
     
     # emulate a google geocode timeout response
     def create
