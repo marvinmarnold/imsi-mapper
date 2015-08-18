@@ -104,11 +104,19 @@ describe "StingrayReadings API" do
   it 'only returns readings above 15 (red and skull)' do
     
     
-    FactoryGirl.create_list(:stingray_reading,10)
+    (1..20).each do |i|
+      # we can't use create_list because it sets all the threat levels the same
+      sr = FactoryGirl.create(:stingray_reading, :threat_level => rand(15..20))
+    end
+    (1..10).each do |i|
+      # we can't use create_list because it sets all the threat levels the same
+      sr = FactoryGirl.create(:stingray_reading, :threat_level => rand(0..14))
+    end
+
     get '/stingray_readings/'
     expect(response).to be_success            # test for the 200 status-code
     json = JSON.parse(response.body)
-    expect(json.length).to eq(10)
+    expect(json.length).to eq(20)
     json.each do |reading|
       expect(reading).to include('threat_level')
       level = reading["threat_level"]
