@@ -7,7 +7,10 @@ require 'spec_helper'
 # run via: bundle exec rspec
 
 describe "StingrayReadings API" do
-  it 'creating a reading directly in the db returns it via the API' do
+  
+  # cc-todo: very basic test of api GET covered by other tests, 
+  # but might help reveal quickly if we break the basics
+  it 'creating a reading directly in the db returns the value via the API' do
     
     #FactoryGirl.create_list(:stingray_reading, 10)
     sr  = FactoryGirl.build(:stingray_reading, :lat => "35.084", :long => "-85.751")
@@ -38,11 +41,10 @@ describe "StingrayReadings API" do
 
     expect(json['location']).to eq("1040 Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States")
     
-    
-
   end
 
-  it 'reverse geocodes the location when we use the api to create' do
+
+  it 'reverse geocodes the location when we use the API to post readings' do
     
     sr  = FactoryGirl.build(:stingray_reading) # does not save to db 
     
@@ -97,6 +99,22 @@ describe "StingrayReadings API" do
       expect(lat).to match(/^\d+.\d{,5}$/)
     end
     
+  end
+  
+  it 'only returns readings above 15 (red and skull)' do
+    
+    
+    FactoryGirl.create_list(:stingray_reading,10)
+    get '/stingray_readings/'
+    expect(response).to be_success            # test for the 200 status-code
+    json = JSON.parse(response.body)
+    expect(json.length).to eq(10)
+    json.each do |reading|
+      expect(reading).to include('threat_level')
+      level = reading["threat_level"]
+      expect(level).to be >= 15
+    end
+  
   end
   
   
