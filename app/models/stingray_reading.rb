@@ -3,9 +3,12 @@ require 'net/http'
 class StingrayReading < ActiveRecord::Base
   
   # round off all lat longs to four decimals before storing them:
-  before_create :roundLatLongToFiveDecimals
+  before_create :setLowerResLatLongs
   after_initialize :after_initialize
   
+  # class variable used to choose which resoluton of lat / long to display
+  # see as_json
+  @@resolution = "low"
  
   # class instance vars for setting number and lengths of naps (when querying overloaded
   # google geocode API):
@@ -76,6 +79,48 @@ class StingrayReading < ActiveRecord::Base
   def prepopulated
     return (self.flag & 0b0000_0010) > 0 
   end    
+  
+  def self.resolution=(val)
+    @@resolution = val
+  end
+  
+  def self.resolution
+    @@resolution
+  end
+  
+  
+    # called by to_json. we use it to limit the lat / long resolution displayed  
+    # depending on the setting of the @@resolution class variable
+    # cc: having to enumerate all the fields is rather fragile
+    def as_json options={}
+
+      attrs = { 
+                "id" => self.id,
+                "observed_at" => self.observed_at,
+                "version" => self.version,
+                "threat_level" => self.threat_level,
+                "created_at" => self.created_at, 
+                "updated_at" => self.updated_at, 
+                "location" => self.location
+      } 
+
+      if @@resolution == 'low' 
+        attrs['lat'] = self.low_res_lat
+        attrs['long'] = self.low_res_long
+      end
+      if @@resolution == 'medium' 
+        attrs['lat'] = self.med_res_lat
+        attrs['long'] = self.med_res_long
+      end
+      if @@resolution == 'high' 
+        attrs['lat'] = self.high_res_lat
+        attrs['long'] = self.high_res_long
+      end
+
+      return attrs
+
+    end
+
 
   private
   
@@ -185,11 +230,16 @@ class StingrayReading < ActiveRecord::Base
     # utils
     #
   
-    # round the lat/long of the given reading to 5 decimal places
-    def roundLatLongToFiveDecimals()
-      self.lat = (self.lat * 100000).floor / 100000.0
-      self.long = (self.long * 100000).floor / 100000.0
+    # round the lat/long to 5 and 3 decimal places
+    def setLowerResLatLongs()
+      self.med_res_lat = (self.lat * 100000).floor / 100000.0
+      self.med_res_long = (self.long * 100000).floor / 100000.0
+      self.low_res_lat = (self.lat * 1000).floor / 1000.0
+      self.low_res_long = (self.long * 1000).floor / 1000.0
+      
     end
+  
+
   
     # cc: appears unused
     def googleMapsEndpointFor(latitude, longitude)

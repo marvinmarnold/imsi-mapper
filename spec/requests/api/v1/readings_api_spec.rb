@@ -85,8 +85,12 @@ describe "StingrayReadings API" do
     expect(json.length).to eq(10)
     json.each do |reading|
       expect(reading).to include('lat','long')
+      #STDERR.puts reading
       lat = reading["lat"]
-      expect(lat).to match(/^\d+.\d{,3}$/)
+      expect(lat).to match(/^[-]*\d+.\d{,3}$/)
+
+      long = reading["long"]
+      expect(long).to match(/^[-]*\d+.\d{,3}$/)
     end
     
     get '/stingray_readings/',  nil, {'Authorization' => "Token token=#{key.access_token}"}
@@ -96,7 +100,10 @@ describe "StingrayReadings API" do
       #STDERR.puts reading
       expect(reading).to include('lat','long')
       lat = reading["lat"]
-      expect(lat).to match(/^\d+.\d{,5}$/)
+      expect(lat).to match(/^[-]*\d+.\d{,5}$/)
+      long = reading["long"]
+      expect(long).to match(/^[-]*\d+.\d{,5}$/)
+
     end
     
   end

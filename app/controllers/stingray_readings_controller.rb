@@ -11,20 +11,21 @@ class StingrayReadingsController < ApplicationController
   # GET /stingray_readings.json
   def index
 
+    StingrayReading.resolution= 'low'
+    if (@bIsAuthorized)
+      StingrayReading.resolution= 'medium'
+    end
+
     @stingray_readings = StingrayReading.where("threat_level >= 15")
     
-    if (!@bIsAuthorized)
-      @stingray_readings.each do |reading|
-          roundLatLong(reading)
-      end
-    end
     render json: @stingray_readings
+    
   end
 
   # GET /stingray_readings/1
   # GET /stingray_readings/1.json
   def show
-    
+  
     render json: @stingray_reading
   end
 
@@ -93,19 +94,21 @@ class StingrayReadingsController < ApplicationController
     end
 
     def set_stingray_reading
+    
+      StingrayReading.resolution= 'low'
+      if (@bIsAuthorized)
+        StingrayReading.resolution= 'medium'
+      end
+      
       @stingray_reading = StingrayReading.find(params[:id])
       
-      if (!@bIsAuthorized) 
-        roundLatLong(@stingray_reading)
-      end
-
     end
 
     # round the lat/long of the given reading to 3 decimal places for display
-    def roundLatLong(reading)
-      reading.lat = (reading.lat * 1000).floor / 1000.0
-      reading.long = (reading.long * 1000).floor / 1000.0
-    end
+    #def roundLatLong(reading)
+    #  reading.lat = (reading.lat * 1000).floor / 1000.0
+    #  reading.long = (reading.long * 1000).floor / 1000.0
+    #end
 
     def stingray_reading_params
       #cc: don't permit remote setting of flag field

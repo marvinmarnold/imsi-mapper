@@ -15,7 +15,8 @@ RSpec.describe StingrayReading, :type => :model do
     end
 
     context "with 1 readings" do
-        reading = FactoryGirl.build(:stingray_reading, :lat => "35.084", :long => "-85.751")
+        reading = FactoryGirl.build(:stingray_reading, :lat => "35.0841592", :long => "-85.7512524")
+        
         
 =begin
 # not using google geocoder 
@@ -39,6 +40,13 @@ RSpec.describe StingrayReading, :type => :model do
             expect(reading.location).to eq("1040 Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States") 
         end
         
+    end
+
+
+    context "with x readings" do
+
+        
+
     end
 
   # pending "add some examples to (or delete) #{__FILE__}"
