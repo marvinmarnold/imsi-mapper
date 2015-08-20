@@ -124,6 +124,7 @@ class StingrayReadingsController < ApplicationController
         return nil
       end
       
+      # this catches incorrect json that parses somehow, but uses => instead of :
       stingray_readings = params.require(:stingray_reading)
       
       unless stingray_readings.instance_of? ActionController::Parameters
