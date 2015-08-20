@@ -37,6 +37,12 @@ class StingrayReadingsController < ApplicationController
   # POST /stingray_readings
   # POST /stingray_readings.json
   def create
+    
+    unless stingray_reading_params 
+      render json: { :message => 'invalid json'}, status: :unprocessable_entity
+      return
+    end
+    
     @stingray_reading = StingrayReading.new(stingray_reading_params)
 
     if @stingray_reading.save
@@ -51,12 +57,20 @@ class StingrayReadingsController < ApplicationController
       render json: @stingray_reading.errors, status: :unprocessable_entity
     end
     
+    #STDERR.puts @stingray_reading.inspect
+    
   end
 
   # PATCH/PUT /stingray_readings/1
   # PATCH/PUT /stingray_readings/1.json
   def update
-    @stingray_reading = StingrayReading.find(params[:id])
+    
+    unless stingray_reading_params 
+       render json: { :message => 'invalid json'}, status: :unprocessable_entity
+      return
+    end
+    
+    @stingray_reading = StingrayReading.find(stingray_reading_params[:id])
 
     if @stingray_reading.update(stingray_reading_params)
       head :no_content
@@ -102,6 +116,23 @@ class StingrayReadingsController < ApplicationController
     def stingray_reading_params
       #cc: don't permit remote setting of flag field
       #cc: don't let user set location, correct? we look that up ourselves..
-      params.require(:stingray_reading).permit(:observed_at, :version, :lat, :long, :threat_level) #, :location)
+      
+      #STDERR.puts "got params: " + params.to_json
+      
+      unless params.instance_of? ActionController::Parameters
+        STDERR.puts "params not a parameter object." 
+        return nil
+      end
+      
+      stingray_readings = params.require(:stingray_reading)
+      
+      unless stingray_readings.instance_of? ActionController::Parameters
+         STDERR.puts "stingray readings a string, not a parameter object." 
+         return nil
+      end
+      
+      params = stingray_readings.permit(:observed_at, :version, :lat, :long, :threat_level) #, :location)
+      return params
+    
     end
 end

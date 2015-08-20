@@ -46,12 +46,20 @@ describe "StingrayReadings API" do
 
   it 'reverse geocodes the location when we use the API to post readings' do
     
-    sr  = FactoryGirl.build(:stingray_reading) # does not save to db 
+    #sr  = FactoryGirl.build(:stingray_reading) # does not save to db 
     
+    sr = Hash.new
     #STDERR.puts sr.attributes
-    post "/stingray_readings", :stingray_reading => sr.attributes
-    expect(response).to be_success            # test for the 200 status-code
+    sr['lat']= 29.94235
+    sr['long']= -90.07869
+    sr['observed_at'] = "Aug 20, 2015 2:38:05 PM"
+    sr['version'] = "0.1.34-alpha-b00"
+    sr['threat_level'] = 5
+     
+    post "/stingray_readings", :stingray_reading => sr
     json = JSON.parse(response.body)
+    #STDERR.puts "got json: #{json}"
+    expect(response.status).to be == 201            # test for the 200 status-code
     #STDERR.puts json.inspect  
  
     
