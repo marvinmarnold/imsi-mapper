@@ -3,6 +3,7 @@ require 'net/http'
 class StingrayReading < ActiveRecord::Base
   
   # round off all lat longs to four decimals before storing them:
+  before_update :setLowerResLatLongs
   before_create :setLowerResLatLongs
   after_initialize :after_initialize
   
@@ -30,6 +31,9 @@ class StingrayReading < ActiveRecord::Base
       @sMapboxAccessToken = "pk.eyJ1IjoibWFjd2FuZyIsImEiOiI2N2FhMGUzZWQzZjhlMTU3YzM4ZTBiZmQ5ZDViMGMxNCJ9.2sV6xIsWgQ7UAv4Df0w0ZA"
       @sMapBoxBaseURL = "https://api.mapbox.com/v4/geocode/";
       @sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
+      
+      # in case user calls "build", update_create doesn't get called. 
+      setLowerResLatLongs
   end
   
   # calls configured reverse geocode API: mapbox or google 
@@ -87,7 +91,18 @@ class StingrayReading < ActiveRecord::Base
   def self.resolution
     @@resolution
   end
-  
+
+  # over ride lat /long setters so we update our lower res lat/longs  
+  def self.lat=(val)
+    self.lat =val
+    setLowerResLatLongs
+  end
+
+  def self.long=(val)
+    self.lat =val
+    setLowerResLatLongs
+  end
+
   
     # called by to_json. we use it to limit the lat / long resolution displayed  
     # depending on the setting of the @@resolution class variable
@@ -139,24 +154,84 @@ class StingrayReading < ActiveRecord::Base
   
       uri = URI(sUrl)
       response = Net::HTTP.get_response(uri)
+      
       j = JSON.parse(response.body) if response.is_a?(Net::HTTPSuccess)
       
+      features = j.try(:[],"features")
+      firstFeature = features.try(:[],0) #.try(:[],"text")
+      return false unless firstFeature
+
+      if firstFeature.try(:[],'id') =~ /^address\.\d+$/ && firstFeature.try(:[],'type') == 'Feature'
       
-      return false unless j
-      return false unless j["features"]
-      #STDERR.puts j["features"].inspect
-      return false unless j["features"][0] 
-      return false unless j["features"][0]["text"]
-      
-      #return self.location = j.try(:[], "features").try(:[],[0]).try(:[],"text")
-      
-      
-      self.location = j["features"][0]["place_name"]
-      return true
+        secondFeature = features.try(:[],1)
+        return false unless secondFeature
+        
+        if secondFeature.try(:[],'id') =~ /^place\.\d+$/
+
+          # we got an exact street address match for the lat & long.
+          #   "text" value is street name only
+          #   "address" the street number only
+          #   "place_name" the complete address
+
+          # second feature place_name contains city, state etc, everything but street name
+
+          address = firstFeature.try(:[],'address')
+          if (!address)
+              # STDERR.puts " no street ddress? " + firstFeature.inspect
+              sObscurredStreetNumber = ''
+          else
+              sObscurredStreetNumber = 'The ' + obscureStreetNumber(address)  + ' block of '   
+          end
+          
+          sStreetName = firstFeature.try(:[],'text')
+          sPlace = secondFeature.try(:[],'place_name')  
+          
+          self.location = sObscurredStreetNumber + sStreetName + ', ' + sPlace
+          #STDERR.puts self.location
+        end
+        
+      else  
+          # if first result isn't of that type, return the whole place_name value?
+          self.location = firstFeature.try(:[],'place_name')
+          #STDERR.puts 'got inexact address: ' + self.location
+      end
+
+      return self.location
   
     end
     
+    # takes a streetnumber, which may start with a letter, and returns it rounded
+    # to the nearest hundreds. this could use some tightening:
+    def obscureStreetNumber(sn)
     
+      return '' unless sn 
+      
+      unless (md = /^([a-zA-Z]*)(\d+)$/.match(sn.to_s))
+        STDERR.puts "no match to format of our street number regex? sn: #{sn}"
+        return ''
+      end
+      captured = md.captures
+      # we sometimes get addresses like N2342. break off the leading letters:
+      sStreetAddressLetterPrefix = captured[0]
+      digitsOnly = captured[1]
+      
+      numDigits = digitsOnly.length
+      # any number from 0-100 return as "100" (b/c "0 block of x" sounds weird):
+      return sStreetAddressLetterPrefix + "100" if (numDigits <= 2)
+      
+      # round off to nearest hundreds, which typically is a block?
+      unless (md = /^(\d+)(\d{2,2})/.match(digitsOnly))
+        STDERR.puts "could not round off digits: '#{digitsOnly}'"
+        return ''
+      end
+      captured = md.captures
+      obscuredDigits = captured[0] + '00'
+      
+      # return rounded off street address 
+      return sStreetAddressLetterPrefix + obscuredDigits
+    
+    end
+  
     # looks up location based on lat/long via Google (free & throttled) geocoding 
     # service. returns true if it responds with known location, false otherwise
     #
@@ -236,7 +311,6 @@ class StingrayReading < ActiveRecord::Base
       self.med_res_long = (self.long * 100000).floor / 100000.0
       self.low_res_lat = (self.lat * 1000).floor / 1000.0
       self.low_res_long = (self.long * 1000).floor / 1000.0
-      
     end
   
 

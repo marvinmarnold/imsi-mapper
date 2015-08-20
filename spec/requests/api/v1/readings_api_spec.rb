@@ -31,7 +31,7 @@ describe "StingrayReadings API" do
     #expect(json).to include(sr.attributes)
 
     # for now, just compare location string:
-    expect(json[0]['location']).to eq("1040 Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States")
+    expect(json[0]['location']).to eq("The 1000 block of Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States")
  
     
     get "/stingray_readings/#{sr.id}"
@@ -39,7 +39,7 @@ describe "StingrayReadings API" do
     json = JSON.parse(response.body)
     #see above comment: expect(json).to include(sr.attributes)
 
-    expect(json['location']).to eq("1040 Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States")
+    expect(json['location']).to eq("The 1000 block of Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States")
     
   end
 
@@ -108,7 +108,7 @@ describe "StingrayReadings API" do
     
   end
   
-  it 'only returns readings above 15 (red and skull)' do
+  it 'only returns readings above 15 (red and skull) when no token sent' do
     
     
     (1..20).each do |i|
@@ -131,6 +131,60 @@ describe "StingrayReadings API" do
   
   end
   
+  
+  it 'returns readings of all levels when token sent' do
+    
+    key = ApiKey.create!
+    expect(key.attributes.keys).to include('access_token')
+
+    (1..20).each do |i|
+      # we can't use create_list because it sets all the threat levels the same
+      sr = FactoryGirl.create(:stingray_reading, :threat_level => rand(15..20))
+    end
+    (1..10).each do |i|
+      sr = FactoryGirl.create(:stingray_reading, :threat_level => rand(0..14))
+    end
+
+    get '/stingray_readings/',  nil, {'Authorization' => "Token token=#{key.access_token}"}
+
+    expect(response).to be_success            # test for the 200 status-code
+    json = JSON.parse(response.body)
+    expect(json.length).to eq(30)
+    json.each do |reading|
+      expect(reading).to include('threat_level')
+      level = reading["threat_level"]
+      expect(level).to be >= 0
+      expect(level).to be <= 20
+    end
+  
+  
+  
+  end
+  
+  it 'truncates the address to the 100s block of a street' do
+    
+    
+    StingrayReading.delete_all
+    
+    sr  = FactoryGirl.build(:stingray_reading, :lat => "35.084", :long => "-85.751")
+    sr.reverseGeocode
+    sr.save
+    
+    expect(sr).to be_valid
+    expect(sr.location).to eq("The 1000 block of Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States")
+
+    
+    # without token, expect only 3 decimal places
+    get '/stingray_readings/'
+    expect(response).to be_success            # test for the 200 status-code
+    json = JSON.parse(response.body)
+    expect(json.length).to eq(1)
+    json.each do |reading|
+      expect(reading).to include('location')
+      expect("The 1000 block of Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States").to match(reading['location'])
+
+    end
+  end
   
   
 end

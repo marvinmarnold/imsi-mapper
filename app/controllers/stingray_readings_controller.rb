@@ -9,13 +9,21 @@ class StingrayReadingsController < ApplicationController
   def index
 
     StingrayReading.resolution= 'low'
+    threshhold = 15
     if (@bIsAuthorized)
       StingrayReading.resolution= 'medium'
+      threshhold = 0
     end
-
-    @stingray_readings = StingrayReading.where("threat_level >= 15")
     
-    render json: @stingray_readings
+    # cc- temp: buffering req to dp for now
+    # note that find_in_batches returns in ASC ascending (not what we want)
+    
+    stingray_readings = Array.new
+    StingrayReading.where("threat_level >= #{threshhold}").find_in_batches do |readings|
+      readings.each { |r| stingray_readings.push r }
+    end
+    
+    render json: stingray_readings
     
   end
 

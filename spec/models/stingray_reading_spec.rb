@@ -37,7 +37,7 @@ RSpec.describe StingrayReading, :type => :model do
         it "handles geocodes with mapbox" do
             reading.useMapboxGeocoder
             reading.reverseGeocode
-            expect(reading.location).to eq("1040 Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States") 
+            expect(reading.location).to eq("The 1000 block of Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States") 
         end
         
     end
