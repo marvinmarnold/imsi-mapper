@@ -9,6 +9,7 @@ test_long = -90.07869
 test_observed_at = "Aug 20, 2015 2:38:05 PM"
 test_version = "0.1.34-alpha-b00"
 test_threat_level = 5
+
 test_params = {
   lat: test_lat,
   long: test_long,
@@ -22,7 +23,7 @@ describe "StingrayReadings API" do
   # cc-todo: very basic test of api GET covered by other tests,
   # but might help reveal problems quickly if we break the basics
   it 'creating a reading directly in the db returns the value via the API' do
-
+    StingrayReading.delete_all
     #FactoryGirl.create_list(:stingray_reading, 10)
     sr  = FactoryGirl.build(:stingray_reading, test_params)
     sr.reverseGeocode
@@ -30,67 +31,41 @@ describe "StingrayReadings API" do
 
     expect(sr).to be_valid
 
-    get '/stingray_readings/' # '/api/v1/messages'
+    post '/stingray_readings/', {stingray_reading: test_params}
 
     expect(response).to be_success            # test for the 200 status-code
-    json = JSON.parse(response.body)
-    expect(json.length).to eq(1) # check to make sure the right amount of messages are returned
+    reading_json = JSON.parse(response.body)
+    expect(reading_json.length).to eq(4) # check to make sure the right amount of fields are returned
 
     #cc-todo: should compare all keys of attrs match database,
     # following doesn't pass as json has strings for lat & long and time fields,
     # while object attributes are decimals and time format
     #expect(json).to include(sr.attributes)
 
-    reading_json = json[0]
     expect(reading_json['location']).to be_nil
-    expest(reading_json['longitude']).to eq(test_long)
-    expest(reading_json['latitude']).to eq(test_lat)
-    expest(reading_json['version']).to eq(test_version)
-    expest(reading_json['threat_level']).to eq(test_threat_level)
-    expest(reading_json['observed_at']).to eq(test_observed_at)
-
-    get "/stingray_readings/#{sr.id}"
-    expect(response).to be_success            # test for the 200 status-code
-    json = JSON.parse(response.body)
-    #see above comment: expect(json).to include(sr.attributes)
-
-    expect(json['location']).to eq("The 1000 block of Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States")
-
+    expect(reading_json['longitude']).to eq(test_long.to_s)
+    expect(reading_json['latitude']).to eq(test_lat.to_s)
+    expect(reading_json['threat_level']).to eq(test_threat_level)
+    expect(reading_json['observed_at'].to_datetime).to eq(test_observed_at.to_datetime)
   end
 
 
   it 'reverse geocodes the location when we use the API to post readings' do
-
     sr  = FactoryGirl.create(:stingray_reading, test_params) # does not save to db
 
-    post "/stingray_readings", :stingray_reading => sr
+    post "/stingray_readings", :stingray_reading => test_params
     json = JSON.parse(response.body)
     #STDERR.puts "got json: #{json}"
     expect(response.status).to be == 201            # test for the 200 status-code
     #STDERR.puts json.inspect
 
-
     # give it a second to geocode, then get it:
     sleep(1)
-    expect(json).to include('id')
-    get "/stingray_readings/#{json['id']}"
-    expect(response).to be_success            # test for the 200 status-code
-    json = JSON.parse(response.body)
-    expect(json["location"]).not_to eq('nil')
-    expect(json["latitude"]).to eq('nil')
-    #STDERR.puts json.inspect
-
-    #expect(json['location']).to eq("1040 Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States")
-
+    expect(assigns(:stingray_reading).location).to eq('The 2800 block of Thalia St, New Orleans, 70113, Louisiana, United States')
   end
 
   it 'shows the proper precision with and without a token' do
-
-    #key = FactoryGirl.build(:api_key) # create a token in the test db
-
     key = ApiKey.create!
-
-    #STDERR.puts "token is: #{key.access_token}"
 
     FactoryGirl.create_list(:stingray_reading,10)
 
@@ -116,12 +91,10 @@ describe "StingrayReadings API" do
       #STDERR.puts reading
       expect(reading).to include('latitude','longitude')
       lat = reading["latitude"]
-      expect(lat).to match(/^[-]*\d+.\d{,5}$/)
+      expect(lat).to match(/^[-]?\d+.\d{,5}$/)
       long = reading["longitude"]
-      expect(long).to match(/^[-]*\d+.\d{,5}$/)
-
+      expect(long).to match(/^[-]?\d+.\d{,5}$/)
     end
-
   end
 
   it 'only returns readings above 15 (red and skull) when no token sent' do

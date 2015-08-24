@@ -105,42 +105,7 @@ class StingrayReading < ActiveRecord::Base
     setLowerResLatLongs
   end
 
-
-    # called by to_json. we use it to limit the lat / long resolution displayed
-    # depending on the setting of the @@resolution class variable
-    # cc: having to enumerate all the fields is rather fragile
-    def as_json options={}
-
-      attrs = {
-                "id" => self.id,
-                "observed_at" => self.observed_at,
-                "version" => self.version,
-                "threat_level" => self.threat_level,
-                "created_at" => self.created_at,
-                "updated_at" => self.updated_at,
-                "location" => self.location
-      }
-
-      if @@resolution == 'low'
-        attrs['lat'] = self.low_res_lat
-        attrs['long'] = self.low_res_long
-      end
-      if @@resolution == 'medium'
-        attrs['lat'] = self.med_res_lat
-        attrs['long'] = self.med_res_long
-      end
-      if @@resolution == 'high'
-        attrs['lat'] = self.high_res_lat
-        attrs['long'] = self.high_res_long
-      end
-
-      return attrs
-
-    end
-
-
   private
-
 
     # query mapbox with lat long and fill in location value of reading with result
     # return false if no result, true otherwise
@@ -314,8 +279,6 @@ class StingrayReading < ActiveRecord::Base
       self.low_res_lat = (self.lat * 1000).floor / 1000.0
       self.low_res_long = (self.long * 1000).floor / 1000.0
     end
-
-
 
     # cc: appears unused
     def googleMapsEndpointFor(latitude, longitude)

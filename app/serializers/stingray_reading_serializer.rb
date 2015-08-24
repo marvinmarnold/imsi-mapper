@@ -1,5 +1,5 @@
 class StingrayReadingSerializer < ActiveModel::Serializer
   attributes :location, :observed_at, :threat_level
-  attribute :long, :key => :longitude
-  attribute :lat, :key => :latitude
+  attribute :med_res_long, :key => :longitude
+  attribute :med_res_lat, :key => :latitude
 end
