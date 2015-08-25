@@ -43,9 +43,9 @@ context 'when there are ten nearby readings' do
         json = JSON.parse(response.body)
         expect(json.length).to eq(10)
         
-        json.each do |sr|
-            STDERR.puts sr
-        end
+        #json.each do |sr|
+        #    STDERR.puts sr
+        #end
         
     end
     
