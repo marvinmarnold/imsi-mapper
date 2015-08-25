@@ -43,9 +43,9 @@ context 'when there are ten nearby readings' do
         json = JSON.parse(response.body)
         expect(json.length).to eq(10)
         
-        #json.each do |sr|
-        #    STDERR.puts "nearby: #{sr['unique_token']}: #{sr['latitude']}, #{sr['longitude']}, #{sr['observed_at']}"
-        #end
+        json.each do |sr|
+            STDERR.puts sr
+        end
         
     end
     

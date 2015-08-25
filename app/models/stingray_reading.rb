@@ -7,7 +7,7 @@ class StingrayReading < ActiveRecord::Base
   scope :dangerous, ->(threat_tolerance) { where("threat_level >= ?", threat_tolerance).order(observed_at: :desc)}
 
   scope :nearby, 
-    ->(threathold,lat,long,since) { # threathold = threshhold of the threat, you thee
+    ->(threathold,lat,long,since) { # threathold = threshold of the threat, you thee
       #cc should validate beforehand
       minlat = lat.to_f - NEARBY_RADIUS
       maxlat = lat.to_f + NEARBY_RADIUS

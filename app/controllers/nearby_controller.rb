@@ -9,18 +9,18 @@ class NearbyController < ApplicationController
       return
     end
 
-    threshhold = 15
+    threshold = 15
     if (@bIsAuthorized)
-      threshhold = 0
+      threshold = 0
     end
 
     tsp = time_space_params
-    nearby_readings = StingrayReading.nearby(threshhold,tsp[:lat],tsp[:long],tsp[:since])
+    nearby_readings = StingrayReading.nearby(threshold,tsp[:lat],tsp[:long],tsp[:since])
 
     if (@bIsAuthorized)
       render json: nearby_readings, status: :ok
     else
-      render json: nearby_readings, status: :ok, each_serializer: PublicStingrayReadingSerializer
+      render json: nearby_readings, status: :ok, each_serializer: PublicNearbyReadingSerializer
     end
 
   end
@@ -30,7 +30,7 @@ class NearbyController < ApplicationController
     def time_space_params
 
 
-      STDERR.puts "got params: " + params.to_json
+      #STDERR.puts "got params: " + params.to_json
 
 
       unless params.instance_of? ActionController::Parameters
