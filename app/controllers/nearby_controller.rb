@@ -15,12 +15,12 @@ class NearbyController < ApplicationController
     end
 
     tsp = time_space_params
-    nearby_readings = StingrayReading.nearby(@threshold, tsp[:lat], tsp[:long], tsp[:since])
-
+    @nearby_readings = StingrayReading.nearby(@threshold, tsp[:lat], tsp[:long], tsp[:since].to_datetime.in_time_zone)
+    # binding.pry
     if (@bIsAuthorized)
-      render json: nearby_readings, status: :ok
+      render json: @nearby_readings, status: :ok
     else
-      render json: nearby_readings, status: :ok, each_serializer: PublicNearbyReadingSerializer
+      render json: @nearby_readings, status: :ok, each_serializer: PublicNearbyReadingSerializer
     end
 
   end
@@ -46,7 +46,7 @@ class NearbyController < ApplicationController
 
       #STDERR.puts "got time and space: " + time_and_space.to_json
 
-      params = time_and_space.permit(:lat,:long,:since) #, :location)
+      params = time_and_space.permit(:lat, :long, :since) #, :location)
 
       return params
     end

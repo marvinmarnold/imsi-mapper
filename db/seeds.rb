@@ -6,21 +6,18 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 require 'csv'
+require 'factory_girl'
 
-StingrayReading.delete_all
+if(StingrayReading.all.size == 0)
+  CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
+    @stingray_reading = FactoryGirl.build(:dangerous_stingray_reading)
+    @stingray_reading.prepopulated= true
 
-CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
+    if @stingray_reading.reverse_geocode
+      @stingray_reading.save
+    end
 
-  #STDERR.puts "Processing #{row}"
-  iThreatLevel = rand(15..20)
-  @stingray_reading = StingrayReading.new( version: "1", lat: row[0], long: row[1], threat_level: iThreatLevel, observed_at: Time.now)
-  @stingray_reading.prepopulated= true
-
-  if @stingray_reading.reverseGeocode
-    #STDERR.puts @stingray_reading.location.inspect
-    @stingray_reading.save()
   end
-
 end
 
 CSV.foreach('db/factoids.csv', {:headers => true, :col_sep => ","}) do |row|

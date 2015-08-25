@@ -1,6 +1,8 @@
 require 'net/http'
 
 class StingrayReading < ActiveRecord::Base
+  before_save :ensure_reverse_geocode
+  before_save :normalize_observed_at
 
   NEARBY_RADIUS = 0.0005
   DEGREES_TO_RADIANS = Math::PI / 180
@@ -61,7 +63,7 @@ class StingrayReading < ActiveRecord::Base
   # calls configured reverse geocode API: mapbox or google
   # this sets our location field to a placename string corresponding to
   # our lat & long. assumes lat & long already set.
-  def reverseGeocode
+  def reverse_geocode
     if @symGeocoder == :mapbox
         return reverseGeocodeViaMapBox
     elsif @symGeocoder == :google
@@ -118,7 +120,13 @@ class StingrayReading < ActiveRecord::Base
     setLowerResLatLongs
   end
 
+
   private
+
+    # ma: as noted elsewhere, this should not block
+    def ensure_reverse_geocode
+      reverse_geocode unless location
+    end
 
     # query mapbox with lat long and fill in location value of reading with result
     # return false if no result, true otherwise
@@ -315,4 +323,7 @@ class StingrayReading < ActiveRecord::Base
       "http://maps.googleapis.com/maps/api/geocode/xml?latlng=" + latitude + "," + longitude + "&sensor=true"
     end
 
+    def normalize_observed_at
+      self.observed_at = self.observed_at.to_datetime
+    end
 end

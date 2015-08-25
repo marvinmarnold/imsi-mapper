@@ -4,7 +4,7 @@ class StingrayReadingsController < ApplicationController
   # GET /stingray_readings
   # GET /stingray_readings.json
   def index
-    @stingray_readings = StingrayReading.dangerous(@threshhold)
+    @stingray_readings = StingrayReading.dangerous(@threshold)
 
     if (@bIsAuthorized)
       render json: @stingray_readings, status: :ok
@@ -17,7 +17,6 @@ class StingrayReadingsController < ApplicationController
   # POST /stingray_readings
   # POST /stingray_readings.json
   def create
-
     unless stingray_reading_params
       render json: {:message => 'invalid json'}, status: :unprocessable_entity
       return
@@ -27,11 +26,6 @@ class StingrayReadingsController < ApplicationController
 
     if @stingray_reading.save
       render json: @stingray_reading,serializer: UnlocatedStingrayReadingSerializer, status: :created
-
-      # cc: see https://github.com/collectiveidea/delayed_job
-      if @stingray_reading.reverseGeocode
-        @stingray_reading.save
-      end
 
     else
       render json: @stingray_reading.errors, status: :unprocessable_entity
