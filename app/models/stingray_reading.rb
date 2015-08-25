@@ -2,7 +2,20 @@ require 'net/http'
 
 class StingrayReading < ActiveRecord::Base
 
+  NEARBY_RADIUS = 0.0005
+  
   scope :dangerous, ->(threat_tolerance) { where("threat_level >= ?", threat_tolerance).order(observed_at: :desc)}
+
+  scope :nearby, 
+    ->(threathold,lat,long,since) { # threathold = threshhold of the threat, you thee
+      #cc should validate beforehand
+      minlat = lat.to_f - NEARBY_RADIUS
+      maxlat = lat.to_f + NEARBY_RADIUS
+      minlong = long.to_f - NEARBY_RADIUS
+      maxlong = long.to_f + NEARBY_RADIUS
+      
+      where("threat_level >= ? and lat >= ? and lat <= ? and long >= ? and long <= ? and observed_at > ?", threathold, minlat, maxlat,minlong,maxlong,since).order(observed_at: :desc)
+    }
 
   # round off all lat longs to four decimals before storing them:
   before_update :beforeUpdateOrCreate

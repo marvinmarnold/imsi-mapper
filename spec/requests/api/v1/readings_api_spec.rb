@@ -68,6 +68,7 @@ describe "StingrayReadings API" do
   it 'shows the proper precision with and without a token' do
     key = ApiKey.create!
 
+    StingrayReading.delete_all
     readings = FactoryGirl.create_list(:stingray_reading,10)
     readings.each do |r|
         r.reverseGeocode
@@ -106,7 +107,7 @@ describe "StingrayReadings API" do
   end
 
   it 'only returns readings above 15 (red and skull) when no token sent' do
-
+    StingrayReading.delete_all
     (1..20).each do |i|
       # we can't use create_list because it sets all the threat levels the same
       sr = FactoryGirl.create(:stingray_reading, :threat_level => rand(15..20))
@@ -132,6 +133,7 @@ describe "StingrayReadings API" do
     key = ApiKey.create!
     expect(key.attributes.keys).to include('access_token')
 
+    StingrayReading.delete_all
     (1..20).each do |i|
       # we can't use create_list because it sets all the threat levels the same
       sr = FactoryGirl.create(:stingray_reading, :threat_level => rand(15..20))
