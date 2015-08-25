@@ -124,4 +124,33 @@ context 'when there are ten nearby readings that are too old' do
     
  end
  
+=begin
+ context 'when there are ten readings of the same longitude of increasing latitude' do
+     it 'verify the longitudal search area increases and handles the polls' do
+    
+        # pass lat, long, time
+        (1..20).each do |i| 
+            lat = -89.0 - (i.to_f/20.0)
+            long = 45.0
+            
+            nearby_params = {
+                lat: lat,
+                long: long,             
+                since: Time.now - 120
+            }
+            get '/nearby.json', {time_and_space: nearby_params}, { :format => :json }
+            expect(response).to be_success            # test for the 200 status-code
+            json = JSON.parse(response.body)
+        end
+        #expect(json.length).to eq(10)
+        
+        #json.each do |sr|
+        #    STDERR.puts sr
+        #end
+        
+    end
+
+ end
+=end
+ 
 end

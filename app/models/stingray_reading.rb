@@ -3,18 +3,28 @@ require 'net/http'
 class StingrayReading < ActiveRecord::Base
 
   NEARBY_RADIUS = 0.0005
+  DEGREES_TO_RADIANS = Math::PI / 180 
   
   scope :dangerous, ->(threat_tolerance) { where("threat_level >= ?", threat_tolerance).order(observed_at: :desc)}
 
   scope :nearby, 
     ->(threathold,lat,long,since) { # threathold = threshold of the threat, you thee
-      #cc should validate beforehand
+      #cc-todo: should validate range of lat, long and time beforehand
       minlat = lat.to_f - NEARBY_RADIUS
       maxlat = lat.to_f + NEARBY_RADIUS
-      minlong = long.to_f - NEARBY_RADIUS
-      maxlong = long.to_f + NEARBY_RADIUS
       
-      where("threat_level >= ? and lat >= ? and lat <= ? and long >= ? and long <= ? and observed_at > ?", threathold, minlat, maxlat,minlong,maxlong,since).order(observed_at: :desc)
+      if (lat.to_f < 89.9999 and lat.to_f > -89.9999) 
+        longitudeCorrection = NEARBY_RADIUS/Math.cos(lat.to_f * DEGREES_TO_RADIANS) 
+        #STDERR.puts "adjusting degrees of longitudinal search area from #{NEARBY_RADIUS} to #{longitudeCorrection} for latitude: #{lat}"
+        minlong = long.to_f - longitudeCorrection
+        maxlong = long.to_f + longitudeCorrection
+        return where("threat_level >= ? and lat >= ? and lat <= ? and long >= ? and long <= ? and observed_at > ?", threathold, minlat, maxlat,minlong,maxlong,since).order(observed_at: :desc)      
+      else
+        # we're very near the north or south pole. disregard searching by longitude 
+        #STDERR.puts "we're very near the north or south poll: #{lat}. disregard restricting search by longitude"
+        return where("threat_level >= ? and lat >= ? and lat <= ? and observed_at > ?", threathold, minlat, maxlat, since).order(observed_at: :desc)      
+      end
+
     }
 
   # round off all lat longs to four decimals before storing them:
