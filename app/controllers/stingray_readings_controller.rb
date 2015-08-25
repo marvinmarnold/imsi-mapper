@@ -1,25 +1,10 @@
 class StingrayReadingsController < ApplicationController
+  before_action :set_threshold, only: [:index]
 
   # GET /stingray_readings
   # GET /stingray_readings.json
   def index
-    threshhold = 15
-    if (@bIsAuthorized)
-      threshhold = 0
-    end
-
-    # cc- temp: buffering req to dp for now
-    # note that find_in_batches returns in ASC ascending (not what we want)
-
-    # @stingray_readings = Array.new
-    # StingrayReading.where("threat_level >= #{threshhold}").find_in_batches do |readings|
-    #   readings.each { |r| @stingray_readings.push r }
-    # end
-
-    # ma - I think doing scopes will have a lot of the same benefits of find_in_batches
-    # scopes work through ActiveRecord which handles a lot of performance already
-
-    @stingray_readings = StingrayReading.dangerous(threshhold)
+    @stingray_readings = StingrayReading.dangerous(@threshhold)
 
     if (@bIsAuthorized)
       render json: @stingray_readings, status: :ok

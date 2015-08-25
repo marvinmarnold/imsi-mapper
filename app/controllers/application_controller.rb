@@ -5,6 +5,15 @@ class ApplicationController < ActionController::API
 
     before_action :set_authorized
 
+    protected
+
+    def set_threshold
+        @threshold = 15
+        if (@bIsAuthorized)
+          @threshold = 0
+        end
+    end
+
     private
 
         # Let everyone into the API, but set bIsAuthorized to true for those who
