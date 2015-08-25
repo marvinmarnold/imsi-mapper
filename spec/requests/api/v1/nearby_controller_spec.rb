@@ -125,8 +125,8 @@ context 'when there are ten nearby readings that are too old' do
  end
  
 =begin
- context 'when there are ten readings of the same longitude of increasing latitude' do
-     it 'verify the longitudal search area increases and handles the polls' do
+ context 'when there are  readings of the same longitude of increasing latitude' do
+     it 'verify the longitudal search area increases and handles the poles' do
     
         # pass lat, long, time
         (1..20).each do |i| 
