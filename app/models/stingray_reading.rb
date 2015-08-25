@@ -3,26 +3,26 @@ require 'net/http'
 class StingrayReading < ActiveRecord::Base
 
   NEARBY_RADIUS = 0.0005
-  DEGREES_TO_RADIANS = Math::PI / 180 
-  
+  DEGREES_TO_RADIANS = Math::PI / 180
+
   scope :dangerous, ->(threat_tolerance) { where("threat_level >= ?", threat_tolerance).order(observed_at: :desc)}
 
-  scope :nearby, 
-    ->(threathold,lat,long,since) { # threathold = threshold of the threat, you thee
+  scope :nearby,
+    ->(threathold, lat, long, since) { # threathold = threshold of the threat, you thee
       #cc-todo: should validate range of lat, long and time beforehand
       minlat = lat.to_f - NEARBY_RADIUS
       maxlat = lat.to_f + NEARBY_RADIUS
-      
-      if (lat.to_f < 89.9999 and lat.to_f > -89.9999) 
-        longitudeCorrection = NEARBY_RADIUS/Math.cos(lat.to_f * DEGREES_TO_RADIANS) 
+
+      if (lat.to_f < 89.9999 and lat.to_f > -89.9999)
+        longitudeCorrection = NEARBY_RADIUS/Math.cos(lat.to_f * DEGREES_TO_RADIANS)
         #STDERR.puts "adjusting degrees of longitudinal search area from #{NEARBY_RADIUS} to #{longitudeCorrection} for latitude: #{lat}"
         minlong = long.to_f - longitudeCorrection
         maxlong = long.to_f + longitudeCorrection
-        return where("threat_level >= ? and lat >= ? and lat <= ? and long >= ? and long <= ? and observed_at > ?", threathold, minlat, maxlat,minlong,maxlong,since).order(observed_at: :desc)      
+        return where("threat_level >= ? and lat >= ? and lat <= ? and long >= ? and long <= ? and observed_at > ?", threathold, minlat, maxlat, minlong, maxlong, since).order(observed_at: :desc)
       else
-        # we're very near the north or south pole. disregard searching by longitude 
+        # we're very near the north or south pole. disregard searching by longitude
         #STDERR.puts "we're very near the north or south poll: #{lat}. disregard restricting search by longitude"
-        return where("threat_level >= ? and lat >= ? and lat <= ? and observed_at > ?", threathold, minlat, maxlat, since).order(observed_at: :desc)      
+        return where("threat_level >= ? and lat >= ? and lat <= ? and observed_at > ?", threathold, minlat, maxlat, since).order(observed_at: :desc)
       end
 
     }
@@ -106,7 +106,7 @@ class StingrayReading < ActiveRecord::Base
     return (self.flag & 0b0000_0010) > 0
   end
 
-  
+
   # over ride lat /long setters so we update our lower res lat/longs
   def self.lat=(val)
     self.lat =val
@@ -140,7 +140,7 @@ class StingrayReading < ActiveRecord::Base
       features = j.try(:[],"features")
       firstFeature = features.try(:[],0) #.try(:[],"text")
       return false unless firstFeature
-      
+
       # STDERR.puts "first feature: " + firstFeature.inspect + "\n\n"
 
       if firstFeature.try(:[],'id') =~ /^address\.\d+$/ && firstFeature.try(:[],'type') == 'Feature'
@@ -149,14 +149,14 @@ class StingrayReading < ActiveRecord::Base
         return false unless secondFeature
 
        # STDERR.puts "second feature: " + secondFeature.inspect + "\n\n"
-       
-       
+
+
         contexts = firstFeature.try(:[],'context')
         contexts.each do |c|
           self.region = c.try(:[],'text') if c.try(:[],'id') =~ /^region\.[\d]+$/
         end
         #STDERR.puts "got region of #{self.region}" if self.region
-        #STDERR.puts "got no region " + contexts.inspect unless self.region 
+        #STDERR.puts "got no region " + contexts.inspect unless self.region
 
         if secondFeature.try(:[],'id') =~ /^place\.\d+$/
 
@@ -177,7 +177,7 @@ class StingrayReading < ActiveRecord::Base
 
           sStreetName = firstFeature.try(:[],'text')
           sPlace = secondFeature.try(:[],'place_name')
-          
+
 
           self.location = sObscurredStreetNumber + sStreetName + ', ' + sPlace
           #STDERR.puts self.location
@@ -301,7 +301,7 @@ class StingrayReading < ActiveRecord::Base
     def beforeUpdateOrCreate()
       setLowerResLatLongs
     end
-    
+
     # round the lat/long to 5 and 3 decimal places
     def setLowerResLatLongs()
       self.med_res_lat = (self.lat * 100000).floor / 100000.0

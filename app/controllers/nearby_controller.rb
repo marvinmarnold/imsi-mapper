@@ -4,10 +4,13 @@ class NearbyController < ApplicationController
 
   # GET /nearby
   # GET /nearby.json
+  # Takes {time_and_space: {lat: LAT, long: LONG, since: SINCE}} and returns
+  # an array of StingrayReadings. If request sent without a valid token,
+  # only the fields unique_token and observed_at are returned.
   def index
 
     unless time_space_params
-      render json: {:message => 'invalid json'}, status: :unprocessable_entity
+      render json: {:message => 'Invalid JSON. Requires {time_and_space: {lat: LAT, long: LONG, since: SINCE}}'}, status: :unprocessable_entity
       return
     end
 
