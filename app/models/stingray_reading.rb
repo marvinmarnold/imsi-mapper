@@ -5,9 +5,10 @@ class StingrayReading < ActiveRecord::Base
   scope :dangerous, ->(threat_tolerance) { where("threat_level >= ?", threat_tolerance).order(observed_at: :desc)}
 
   # round off all lat longs to four decimals before storing them:
-  before_update :setLowerResLatLongs
-  before_create :setLowerResLatLongs
+  before_update :beforeUpdateOrCreate
+  before_create :beforeUpdateOrCreate
   after_initialize :after_initialize
+  has_secure_token :unique_token
 
   # class instance vars for setting number and lengths of naps (when querying overloaded
   # google geocode API):
@@ -31,7 +32,7 @@ class StingrayReading < ActiveRecord::Base
       @sGoogleGeocodeURL = "https://maps.googleapis.com/maps/api/geocode/xml"
 
       # in case user calls "build", update_create doesn't get called.
-      setLowerResLatLongs
+      beforeUpdateOrCreate
   end
 
   # calls configured reverse geocode API: mapbox or google
@@ -274,6 +275,10 @@ class StingrayReading < ActiveRecord::Base
     # utils
     #
 
+    def beforeUpdateOrCreate()
+      setLowerResLatLongs
+    end
+    
     # round the lat/long to 5 and 3 decimal places
     def setLowerResLatLongs()
       self.med_res_lat = (self.lat * 100000).floor / 100000.0

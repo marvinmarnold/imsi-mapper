@@ -6,6 +6,7 @@ gem 'spring', :group => :development
 gem 'pg'
 gem 'rails_12factor', group: :production
 gem 'active_model_serializers', :git => 'git://github.com/rails-api/active_model_serializers.git'
+gem 'has_secure_token'
 
 group :development, :test do
   gem 'rspec-rails', '~> 3.0'

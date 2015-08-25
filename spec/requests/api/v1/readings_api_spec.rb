@@ -35,7 +35,7 @@ describe "StingrayReadings API" do
 
     expect(response).to be_success            # test for the 200 status-code
     reading_json = JSON.parse(response.body)
-    expect(reading_json.length).to eq(4) # check to make sure the right amount of fields are returned
+    expect(reading_json.length).to eq(5) # check to make sure the right amount of fields are returned
 
     #cc-todo: should compare all keys of attrs match database,
     # following doesn't pass as json has strings for lat & long and time fields,
@@ -86,6 +86,9 @@ describe "StingrayReadings API" do
 
       long = reading["longitude"]
       expect(long).to match(/^[-]*\d+.\d{,3}$/)
+      
+      expect(reading["unique_token"]).not_to be_empty
+      # STDERR.puts("unique token: #{reading["unique_token"]}")
       
     end
 
