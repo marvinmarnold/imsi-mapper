@@ -50,7 +50,7 @@ describe "StingrayReadings API" do
   end
 
 
-  it 'reverse geocodes the location when we use the API to post readings' do
+  it 'reverse geocodes the location and region when we use the API to post a reading' do
     sr  = FactoryGirl.create(:stingray_reading, test_params) # does not save to db
 
     post "/stingray_readings", :stingray_reading => test_params
@@ -62,12 +62,16 @@ describe "StingrayReadings API" do
     # give it a second to geocode, then get it:
     sleep(1)
     expect(assigns(:stingray_reading).location).to eq('The 2800 block of Thalia St, New Orleans, 70113, Louisiana, United States')
+    expect(assigns(:stingray_reading).region).to match("Louisiana")
   end
 
   it 'shows the proper precision with and without a token' do
     key = ApiKey.create!
 
-    FactoryGirl.create_list(:stingray_reading,10)
+    readings = FactoryGirl.create_list(:stingray_reading,10)
+    readings.each do |r|
+        r.reverseGeocode
+    end
 
     # without token, expect only 3 decimal places
     get '/stingray_readings/'
@@ -82,6 +86,7 @@ describe "StingrayReadings API" do
 
       long = reading["longitude"]
       expect(long).to match(/^[-]*\d+.\d{,3}$/)
+      
     end
 
     get '/stingray_readings/',  nil, {'Authorization' => "Token token=#{key.access_token}"}

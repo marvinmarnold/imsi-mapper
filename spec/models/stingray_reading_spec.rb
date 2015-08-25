@@ -38,6 +38,7 @@ RSpec.describe StingrayReading, :type => :model do
             reading.useMapboxGeocoder
             reading.reverseGeocode
             expect(reading.location).to eq("The 1000 block of Ellis Cove Rd, South Pittsburg, 37380, Tennessee, United States") 
+            expect(reading.region).to eq("Tennessee")
         end
         
     end

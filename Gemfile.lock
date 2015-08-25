@@ -152,6 +152,3 @@ DEPENDENCIES
   rails_12factor
   rspec-rails (~> 3.0)
   spring
-
-BUNDLED WITH
-   1.10.6

@@ -9,10 +9,6 @@ class StingrayReading < ActiveRecord::Base
   before_create :setLowerResLatLongs
   after_initialize :after_initialize
 
-  # class variable used to choose which resoluton of lat / long to display
-  # see as_json
-  @@resolution = "low"
-
   # class instance vars for setting number and lengths of naps (when querying overloaded
   # google geocode API):
   MAX_NUMBER_OF_NAPS = 5
@@ -65,7 +61,7 @@ class StingrayReading < ActiveRecord::Base
   # to test our time out handling with rspec
   def useFakeTimeoutGoogleGeocoder
     @symGeocoder = :google
-    @sGoogleGeocodeURL= "https://stinger-api-vannm.c9.io/mock" # for testing timeout logic
+    @sGoogleGeocodeURL= "http://localhost/mock" # for testing timeout logic
   end
 
   ##
@@ -86,14 +82,7 @@ class StingrayReading < ActiveRecord::Base
     return (self.flag & 0b0000_0010) > 0
   end
 
-  def self.resolution=(val)
-    @@resolution = val
-  end
-
-  def self.resolution
-    @@resolution
-  end
-
+  
   # over ride lat /long setters so we update our lower res lat/longs
   def self.lat=(val)
     self.lat =val
@@ -127,11 +116,23 @@ class StingrayReading < ActiveRecord::Base
       features = j.try(:[],"features")
       firstFeature = features.try(:[],0) #.try(:[],"text")
       return false unless firstFeature
+      
+      # STDERR.puts "first feature: " + firstFeature.inspect + "\n\n"
 
       if firstFeature.try(:[],'id') =~ /^address\.\d+$/ && firstFeature.try(:[],'type') == 'Feature'
 
         secondFeature = features.try(:[],1)
         return false unless secondFeature
+
+       # STDERR.puts "second feature: " + secondFeature.inspect + "\n\n"
+       
+       
+        contexts = firstFeature.try(:[],'context')
+        contexts.each do |c|
+          self.region = c.try(:[],'text') if c.try(:[],'id') =~ /^region\.[\d]+$/
+        end
+        #STDERR.puts "got region of #{self.region}" if self.region
+        #STDERR.puts "got no region " + contexts.inspect unless self.region 
 
         if secondFeature.try(:[],'id') =~ /^place\.\d+$/
 
@@ -152,6 +153,7 @@ class StingrayReading < ActiveRecord::Base
 
           sStreetName = firstFeature.try(:[],'text')
           sPlace = secondFeature.try(:[],'place_name')
+          
 
           self.location = sObscurredStreetNumber + sStreetName + ', ' + sPlace
           #STDERR.puts self.location
