@@ -11,7 +11,7 @@ FactoryGirl.define do
     end
 
     factory :safe_stingray_reading do
-      threat_level rand(0..14)
+      threat_level { rand(0..14) }
     end
 
     factory :inconsistent_stingray_reading do

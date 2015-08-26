@@ -56,6 +56,7 @@ describe "StingrayReadings API" do
       get '/stingray_readings'
       # binding.pry
       reading_json = get_json response
+
       expect(reading_json.length).to eq(@num_to_test)
       reading_json.each do |reading|
         expect(reading).to include('latitude','longitude')
@@ -76,11 +77,14 @@ describe "StingrayReadings API" do
       get '/stingray_readings',  nil, {'Authorization' => "Token token=#{key.access_token}"}
       reading_json = get_json response
       expect(reading_json.length).to eq(@num_to_test)
+
       reading_json.each do |reading|
         #STDERR.puts reading
         expect(reading).to include('latitude','longitude')
+
         lat = reading["latitude"]
         expect(lat).to match(/^[-]?\d+.\d{,5}$/)
+
         long = reading["longitude"]
         expect(long).to match(/^[-]?\d+.\d{,5}$/)
       end
@@ -89,41 +93,44 @@ describe "StingrayReadings API" do
 
 
   context "when a few safe and dangerous readings have been created" do
-    StingrayReading.delete_all
+    before(:context) do
+      StingrayReading.delete_all
+      @num_dangerous_create = 10
+      @num_safe_create = 3
+      FactoryGirl.create_list(:dangerous_stingray_reading, @num_dangerous_create)
+      FactoryGirl.create_list(:safe_stingray_reading, @num_safe_create)
+    end
 
-    num_dangerous_create = 10
-    num_safe_create = 3
+    it 'only returns readings above 15 (red and skull) when no token sent' do
+      get '/stingray_readings'
+      reading_json = get_json response
+      expect(reading_json.length).to eq(@num_dangerous_create)
 
-    # FactoryGirl.create_list(:dangerous_stingray_reading, num_dangerous_create)
-    # FactoryGirl.create_list(:safe_stingray_reading, num_dangerous_create)
+      reading_json.each do |reading|
+        expect(reading).to include('threat_level')
+        level = reading["threat_level"]
 
-    # it 'only returns readings above 15 (red and skull) when no token sent' do
-    #   get '/stingray_readings'
-    #   get_json response
-    #   expect(json.length).to eq(num_dangerous_create)
-    #   json.each do |reading|
-    #     expect(reading).to include('threat_level')
-    #     level = reading["threat_level"]
-    #     expect(level).to be >= 15
-    #   end
-    # end
+        expect(level).to be >= 15
+      end
+    end
 
-  #   it 'returns readings of all levels when token sent' do
-  #     key = ApiKey.create!
-  #     expect(key.attributes.keys).to include('access_token')
+    it 'returns readings of all levels when token sent' do
+      key = ApiKey.create!
+      expect(key.attributes.keys).to include('access_token')
 
-  #     get '/stingray_readings',  nil, {'Authorization' => "Token token=#{key.access_token}"}
+      get '/stingray_readings',  nil, {'Authorization' => "Token token=#{key.access_token}"}
 
-  #     expect(response).to be_success            # test for the 200 status-code
-  #     json = JSON.parse(response.body)
-  #     expect(json.length).to eq(num_safe_create + num_dangerous_create)
-  #     json.each do |reading|
-  #       expect(reading).to include('threat_level')
-  #       level = reading["threat_level"]
-  #       expect(level).to be >= 0
-  #       expect(level).to be <= 20
-  #     end
-  #   end
+      reading_json = JSON.parse(response.body)
+      expect(reading_json.length).to eq(@num_safe_create + @num_dangerous_create)
+
+      reading_json.each do |reading|
+        expect(reading).to include('threat_level')
+        level = reading["threat_level"]
+
+        expect(level).to be >= 0
+        expect(level).to be <= 20
+      end
+    end
   end
 
   def get_json(response)
