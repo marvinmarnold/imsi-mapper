@@ -20,6 +20,8 @@ if(StingrayReading.all.size == 0)
   end
 end
 
-CSV.foreach('db/factoids.csv', {:headers => true, :col_sep => ","}) do |row|
-  Factoid.create(fact: row[0])
+if(Factoid.all.size ==0)
+  CSV.foreach('db/factoids.csv', {:headers => true, :col_sep => ","}) do |row|
+    Factoid.create(fact: row[0])
+  end
 end
