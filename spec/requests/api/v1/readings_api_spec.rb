@@ -14,13 +14,15 @@ describe "StingrayReadings API" do
     test_observed_at = "Tue, 25 Aug 2015 22:29:57 UTC +00:00"
     test_version = "0.1.34-alpha-b00"
     test_threat_level = 5
+    test_unique_token = "afakerandomtoken"
 
     test_params = {
       lat: test_lat,
       long: test_long,
       observed_at: test_observed_at,
       version: test_version,
-      threat_level: test_threat_level
+      threat_level: test_threat_level,
+      unique_token: test_unique_token
     }
 
     # cc-todo: very basic test of api GET covered by other tests,
@@ -41,6 +43,7 @@ describe "StingrayReadings API" do
       expect(reading_json['latitude']).to eq(test_lat.to_s)
       expect(reading_json['threat_level']).to eq(test_threat_level)
       expect(reading_json['observed_at'].to_datetime).to eq(test_observed_at.to_datetime)
+      expect(reading_json['unique_token']).to eq(test_unique_token)
     end
   end
 

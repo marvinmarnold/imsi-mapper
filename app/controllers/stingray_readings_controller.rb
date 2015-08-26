@@ -11,7 +11,6 @@ class StingrayReadingsController < ApplicationController
     else
       render json: @stingray_readings, status: :ok, each_serializer: PublicStingrayReadingSerializer
     end
-
   end
 
   # POST /stingray_readings
@@ -25,8 +24,7 @@ class StingrayReadingsController < ApplicationController
     @stingray_reading = StingrayReading.new(stingray_reading_params)
 
     if @stingray_reading.save
-      render json: @stingray_reading,serializer: UnlocatedStingrayReadingSerializer, status: :created
-
+      render json: @stingray_reading, serializer: UnlocatedStingrayReadingSerializer, status: :created
     else
       render json: @stingray_reading.errors, status: :unprocessable_entity
     end
@@ -53,7 +51,7 @@ class StingrayReadingsController < ApplicationController
          return nil
       end
 
-      params = stingray_readings.permit(:observed_at, :version, :lat, :long, :threat_level) #, :location)
+      params = stingray_readings.permit(:observed_at, :version, :lat, :long, :threat_level, :unique_token) #, :location)
       return params
     end
 end
