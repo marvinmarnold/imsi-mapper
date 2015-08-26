@@ -6,7 +6,6 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 require 'csv'
-require 'factory_girl'
 
 if(StingrayReading.all.size == 0)
   CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
