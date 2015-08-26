@@ -36,7 +36,7 @@ describe "Nearby API" do
                 long: test_reading_long,
                 since: Time.now - 120
             }
-            get '/nearby', {time_and_space: nearby_params}, { :format => :json }
+            put '/nearby', {time_and_space: nearby_params}, { :format => :json }
             expect(response).to be_success            # test for the 200 status-code
             json = JSON.parse(response.body)
             expect(json.length).to eq(10)
@@ -70,7 +70,7 @@ describe "Nearby API" do
                 long: test_reading_long,
                 since: Time.now - 120
             }
-            get '/nearby', {time_and_space: nearby_params}, { :format => :json }
+            put '/nearby', {time_and_space: nearby_params}, { :format => :json }
             expect(response).to be_success            # test for the 200 status-code
             json = JSON.parse(response.body)
             expect(json.length).to eq(0)
@@ -104,7 +104,7 @@ describe "Nearby API" do
                 long: test_reading_long,
                 since: Time.now - 240
             }
-            get '/nearby', {time_and_space: nearby_params}
+            put '/nearby', {time_and_space: nearby_params}
             expect(response).to be_success            # test for the 200 status-code
             json = JSON.parse(response.body)
             expect(json.length).to eq(0)
