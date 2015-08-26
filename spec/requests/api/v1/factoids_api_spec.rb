@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe "Factoids API" do
-
     it 'lets you read multiple factoids' do
         FactoryGirl.create_list(:factoid,10)
 

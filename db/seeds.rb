@@ -10,7 +10,8 @@ require 'factory_girl'
 
 if(StingrayReading.all.size == 0)
   CSV.foreach('db/gps.csv', {:headers => true, :col_sep => ","}) do |row|
-    @stingray_reading = FactoryGirl.build(:dangerous_stingray_reading)
+    danger_threat_level = rand(15..20)
+    @stingray_reading = StingrayReading.new( version: "1", lat: row[0], long: row[1], threat_level: danger_threat_level, observed_at: Time.now)
     @stingray_reading.prepopulated= true
 
     if @stingray_reading.reverse_geocode

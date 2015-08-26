@@ -52,15 +52,13 @@ describe "StingrayReadings API" do
     end
 
     it 'returns the proper precision without a token' do
-    #   # without token, expect only 3 decimal places
+      # without token, expect only 3 decimal places
       get '/stingray_readings'
-      # binding.pry
       reading_json = get_json response
 
       expect(reading_json.length).to eq(@num_to_test)
       reading_json.each do |reading|
         expect(reading).to include('latitude','longitude')
-        #STDERR.puts reading
         lat = reading["latitude"]
         expect(lat).to match(/^[-]*\d+.\d{,3}$/)
 
@@ -79,7 +77,6 @@ describe "StingrayReadings API" do
       expect(reading_json.length).to eq(@num_to_test)
 
       reading_json.each do |reading|
-        #STDERR.puts reading
         expect(reading).to include('latitude','longitude')
 
         lat = reading["latitude"]
